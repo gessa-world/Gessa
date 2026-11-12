@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#101827">
+<title>GESSA — مجتمعك يبدأ هنا</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="#"><span class="brand-mark">G</span><span>GESSA</span></a>
+  <div class="top-actions"><span class="tag">مجتمعك، عالمك</span><button id="logoutBtn" class="ghost hidden">تسجيل الخروج</button></div>
+</header>
+
+<main>
+  <section id="authView" class="auth-layout">
+    <div class="hero">
+      <div class="eyebrow">مساحة جديدة للجميع</div>
+      <h1>عالمك يبدأ<br><span>من هنا.</span></h1>
+      <p>تواصل، شارك أفكارك، تعرّف على أشخاص جدد، واستعد لاكتشاف عالم GESSA الافتراضي قريبًا.</p>
+      <div class="hero-points"><span>✦ مجتمع واحد</span><span>✦ أفكار بلا حدود</span><span>✦ عالم قادم</span></div>
+      <div class="orb orb-one"></div><div class="orb orb-two"></div>
+    </div>
+    <div class="auth-card">
+      <div class="tabs"><button class="tab active" data-tab="login">تسجيل الدخول</button><button class="tab" data-tab="signup">إنشاء حساب</button></div>
+      <form id="loginForm" class="auth-form">
+        <h2>أهلًا بعودتك</h2><p class="muted">سجّل دخولك إلى مجتمع GESSA.</p>
+        <label>البريد الإلكتروني<input id="loginEmail" type="email" placeholder="name@example.com" required></label>
+        <label>كلمة المرور<input id="loginPassword" type="password" placeholder="كلمة المرور" required></label>
+        <button class="primary full" type="submit">دخول إلى GESSA</button>
+        <p class="hint">هذه نسخة تجريبية؛ الحسابات محفوظة على هذا الجهاز فقط.</p>
+      </form>
+      <form id="signupForm" class="auth-form hidden">
+        <h2>انضم إلى GESSA</h2><p class="muted">أنشئ حسابك وابدأ المشاركة.</p>
+        <label>الاسم الظاهر<input id="signupName" type="text" placeholder="اكتب اسمك" required minlength="2"></label>
+        <label>البريد الإلكتروني<input id="signupEmail" type="email" placeholder="name@example.com" required></label>
+        <label>كلمة المرور<input id="signupPassword" type="password" placeholder="6 أحرف على الأقل" required minlength="6"></label>
+        <button class="primary full" type="submit">إنشاء حساب مجاني</button>
+        <p class="hint">لا تدخل كلمة مرور تستخدمها في مواقع أخرى؛ هذه نسخة أولية غير مخصصة للحسابات الحقيقية.</p>
+      </form>
+      <div id="authMessage" class="message" role="status"></div>
+    </div>
+  </section>
+
+  <section id="appView" class="app-layout hidden">
+    <aside class="sidebar">
+      <div class="mini-profile"><div id="avatarInitial" class="avatar">G</div><div><strong id="sideName">مستخدم GESSA</strong><small>عضو في المجتمع</small></div></div>
+      <nav>
+        <button class="nav-item active" data-section="feed">⌂ <span>الرئيسية</span></button>
+        <button class="nav-item" data-section="profile">◉ <span>ملفي الشخصي</span></button>
+        <button class="nav-item" data-section="discover">✧ <span>اكتشف المجتمع</span></button>
+        <button class="nav-item world-link" data-section="world">◎ <span>العالم الافتراضي</span><em>قريبًا</em></button>
+      </nav>
+      <div class="sidebar-note"><span>✦</span><b>GESSA WORLD</b><p>نحن نبني عالمًا يجمع الناس والأفكار والأعمال في مكان واحد.</p></div>
+    </aside>
+
+    <section class="content">
+      <div class="welcome-row"><div><div class="eyebrow">مساحتك الشخصية</div><h1 id="welcomeTitle">مرحبًا بك في GESSA</h1></div><div class="online-pill"><i></i> أنت هنا</div></div>
+      <section id="feedSection">
+        <div class="composer card">
+          <div class="composer-head"><div id="composerAvatar" class="avatar">G</div><span>ما الذي يدور في بالك؟</span></div>
+          <textarea id="postText" placeholder="شارك فكرة أو خبرًا أو لحظة جميلة مع المجتمع..."></textarea>
+          <div class="composer-bottom"><small>✦ اجعل مشاركتك إيجابية وملهمة</small><button id="publishBtn" class="primary">نشر المشاركة ↗</button></div>
+        </div>
+        <div class="section-title"><h2>آخر المشاركات</h2><span>من مجتمع GESSA</span></div>
+        <div id="postsList" class="posts"></div>
+      </section>
+      <section id="profileSection" class="card profile-card hidden">
+        <div class="profile-cover"></div><div class="profile-body"><div id="profileAvatar" class="avatar big">G</div><h2 id="profileName">اسم المستخدم</h2><p class="muted" id="profileEmail"></p><p>أهلًا بك في مساحتك على GESSA. شارك اهتماماتك وتعرّف على المجتمع.</p><div class="stats"><div><b id="postCount">0</b><small>المشاركات</small></div><div><b>قريبًا</b><small>الأصدقاء</small></div><div><b>قريبًا</b><small>المتابعون</small></div></div></div>
+        </section>
+      <section id="discoverSection" class="hidden">
+        <div class="section-title"><h2>اكتشف مجتمع GESSA</h2><span>مساحة تتسع للجميع</span></div>
+        <div class="feature-grid"><article class="card feature"><span>✦</span><h3>شارك أفكارك</h3><p>انشر ما تحبه وابدأ حوارًا مع الآخرين.</p></article><article class="card feature"><span>♡</span><h3>كوّن صداقات</h3><p>التواصل والمتابعة وإضافة الأصدقاء قيد التطوير.</p></article><article class="card feature"><span>▧</span><h3>اعرض إبداعاتك</h3><p>مساحة للفنانين وصناع المحتوى وأصحاب المشاريع.</p></article></div>
+      </section>
+      <section id="worldSection" class="hidden">
+        <div class="world-banner card"><div class="eyebrow">المرحلة الثانية</div><h2>GESSA WORLD</h2><p>مدينة افتراضية تلتقي فيها المجتمعات، وتُنشأ المتاجر، وتبدأ المغامرات.</p><div class="coming">العالم الافتراضي قيد البناء</div><div class="world-symbol">◎</div></div>
+      </section>
+      <footer>© 2026 GESSA · نسخة أولية تجريبية</footer>
+    </section>
+  </section>
+</main>
+<div id="toast" class="toast"></div>
+<script src="app.js"></script>
+</body>
+</html>
