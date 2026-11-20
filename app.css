@@ -1,0 +1,20 @@
+:root{color-scheme:dark;--bg:#061226;--bg2:#0a1d38;--card:#102744;--line:#24527a;--cyan:#38bdf8;--red:#e5484d;--text:#f4f7fb;--muted:#a8bacb;box-sizing:border-box}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;min-height:100vh;font-family:"Cairo","Segoe UI",Tahoma,sans-serif;color:var(--text);background:radial-gradient(ellipse at 15% 0%,#12365b 0,transparent 42%),linear-gradient(150deg,var(--bg2),var(--bg) 65%);padding-bottom:env(safe-area-inset-bottom,0px)}
+.site-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding:12px max(18px,calc((100vw - 1120px)/2));background:#061226ed;border-bottom:1px solid #38bdf833;backdrop-filter:blur(12px)}
+.logo{display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;width:54px;height:54px;text-decoration:none}.logo img{display:block;width:100%;height:100%;object-fit:contain;border-radius:10px;filter:drop-shadow(0 0 10px rgba(56,189,248,.22))}
+nav{display:flex;gap:6px;flex:1;flex-wrap:wrap}nav a{color:var(--muted);text-decoration:none;padding:7px 13px;border-radius:12px}nav a:hover,nav a.on{background:#38bdf81c;color:#fff}
+.header-actions{display:flex;align-items:center;gap:12px}
+main{width:min(100% - 28px,980px);margin:26px auto;padding:8px 0 48px}
+h1{font-size:clamp(25px,4vw,34px);margin:0 0 18px}h2{font-size:20px;margin:0 0 12px}
+.card{background:linear-gradient(145deg,#102b49,#0d2038);border:1px solid #38bdf833;border-radius:20px;padding:18px;margin:0 0 16px;box-shadow:0 14px 38px #0003}
+.card .meta,.meta{color:var(--muted);font-size:13px;margin-bottom:8px}
+input,textarea,select{width:100%;background:#081a30;border:1px solid #39749a;border-radius:12px;color:var(--text);font:600 15px "Cairo",sans-serif;padding:11px 13px;margin:0 0 12px}
+textarea{resize:vertical}button,.btn{background:linear-gradient(110deg,var(--red),#b91f38);color:#fff;border:0;border-radius:12px;font:800 15px "Cairo",sans-serif;padding:10px 20px;cursor:pointer}
+.link{background:none;border:0;color:var(--cyan);font:700 14px "Cairo",sans-serif;cursor:pointer;text-decoration:none;padding:7px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.price{color:var(--cyan);font-weight:900;font-size:19px}.muted{color:var(--muted)}.item{padding:10px 0;border-top:1px solid #38bdf822}
+.row{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:9px;align-items:start}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);max-width:92vw;background:#102e4d;border:1px solid var(--cyan);padding:12px 18px;border-radius:14px;font-weight:700;z-index:99;box-shadow:0 8px 30px #0008}
+.stat{font-size:28px;color:var(--cyan);font-weight:900}.small{font-size:13px}.hidden,[hidden]{display:none!important}
+@media(max-width:650px){.site-header{padding:10px 14px}.row{grid-template-columns:1fr}nav{order:3;flex-basis:100%}main{margin-top:16px}}

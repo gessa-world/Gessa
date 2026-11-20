@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#061226">
+<title>استكمال حسابك | GESSA</title>
+<link rel="icon" type="image/png" href="gessa-icon.png">
+<link rel="apple-touch-icon" href="gessa-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#061226;--bg2:#0a1d38;--card:#0b2140;--line:#17618a;--cyan:#38bdf8;--red:#e5484d;--text:#f7f9fc;--muted:#a9bfd3;font-family:Cairo,Tahoma,Arial,sans-serif}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;color:var(--text);background:radial-gradient(ellipse at 75% 8%,rgba(0,150,255,.2),transparent 36%),radial-gradient(ellipse at 12% 75%,rgba(229,72,77,.13),transparent 35%),linear-gradient(135deg,#030d1d,#071a33 55%,#061226);overflow-x:hidden}
+body:before{content:"";position:fixed;z-index:-1;left:-5vw;top:16vh;width:clamp(230px,35vw,510px);height:clamp(430px,70vh,700px);border:12px solid rgba(229,72,77,.32);border-radius:55px;background:linear-gradient(145deg,rgba(229,72,77,.15),rgba(5,17,36,.08));box-shadow:0 0 35px rgba(229,72,77,.25),inset 0 0 45px rgba(229,72,77,.12);transform:rotate(-13deg);pointer-events:none}
+body:after{content:"";position:fixed;z-index:-1;left:calc(clamp(230px,35vw,510px)/2 - 5vw);top:calc(16vh + 24px);width:70px;height:8px;border-radius:20px;background:rgba(229,72,77,.28);transform:rotate(-13deg);pointer-events:none}
+.globe{position:fixed;z-index:-1;right:-120px;top:8%;width:480px;height:480px;border:1px solid rgba(56,189,248,.12);border-radius:50%;box-shadow:inset 0 0 70px rgba(56,189,248,.08),0 0 90px rgba(56,189,248,.08);pointer-events:none}
+.globe:before,.globe:after{content:"";position:absolute;inset:12%;border:1px solid rgba(56,189,248,.13);border-radius:50%;transform:rotate(35deg) scaleX(.45)}
+.globe:after{transform:rotate(-35deg) scaleX(.45)}
+header{height:76px;display:flex;align-items:center;justify-content:space-between;padding:0 clamp(18px,5vw,70px);border-bottom:1px solid rgba(56,189,248,.2);background:rgba(4,15,31,.72);backdrop-filter:blur(14px)}
+.logo{font-size:31px;font-weight:900;letter-spacing:1px;color:#fff;text-decoration:none}.logo span{color:var(--cyan)}
+.head-note{color:#bfd4e7;font-size:13px}
+main{width:min(760px,calc(100% - 28px));margin:clamp(24px,6vh,60px) auto 48px}
+.intro{text-align:center;margin:0 auto 22px;max-width:640px}
+.kicker{display:inline-flex;align-items:center;gap:8px;color:#8bdcff;font-size:12px;font-weight:800;letter-spacing:.5px}
+.kicker:before{content:"";width:24px;height:2px;background:var(--red);box-shadow:0 0 12px var(--red)}
+h1{font-size:clamp(25px,4vw,36px);line-height:1.45;margin:8px 0}
+.intro p{color:var(--muted);margin:0;line-height:1.9}
+.card{position:relative;overflow:hidden;padding:clamp(20px,4vw,38px);border:1px solid rgba(56,189,248,.72);border-radius:26px;background:linear-gradient(145deg,rgba(8,31,59,.96),rgba(4,20,42,.97));box-shadow:0 0 0 1px rgba(56,189,248,.08),0 22px 70px rgba(0,0,0,.42),0 0 35px rgba(0,153,255,.12)}
+.card:before{content:"";position:absolute;inset:0 0 auto;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)}
+.steps{display:flex;gap:12px;margin-bottom:28px}
+.step{flex:1;text-align:center;padding:11px 8px;border:1px solid rgba(117,159,198,.25);border-radius:13px;background:rgba(2,13,29,.48);color:#829bb4;font-size:13px;font-weight:700}
+.step.active{border-color:var(--red);color:#fff;background:rgba(229,72,77,.12);box-shadow:0 0 20px rgba(229,72,77,.12)}
+.step.done{border-color:rgba(56,189,248,.55);color:#8bdcff}
+.icon{width:78px;height:78px;display:grid;place-items:center;margin:0 auto 12px;border-radius:50%;color:#ff686d;background:radial-gradient(circle,rgba(229,72,77,.22),rgba(229,72,77,.02) 68%);border:1px solid rgba(229,72,77,.38);box-shadow:0 0 25px rgba(229,72,77,.14)}
+.icon svg{width:43px;height:43px;filter:drop-shadow(0 0 8px rgba(229,72,77,.5))}
+section h2{text-align:center;font-size:24px;margin:0 0 7px}
+.desc{text-align:center;color:var(--muted);font-size:14px;line-height:1.9;margin:0 auto 22px;max-width:500px}
+label{display:block;margin:14px 0 8px;color:#dceafa;font-size:14px;font-weight:700}
+input{display:block;width:100%;padding:15px 17px;border:1px solid rgba(56,189,248,.48);border-radius:14px;background:rgba(2,15,33,.85);color:#fff;font:inherit;font-size:16px;outline:none;transition:.2s}
+input:focus{border-color:var(--cyan);box-shadow:0 0 0 4px rgba(56,189,248,.12)}
+input::placeholder{color:#7895b2}
+.phone-wrap{position:relative}.phone-wrap:before{content:"＋20";position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#8bdcff;font-weight:800;pointer-events:none}
+#phone{direction:ltr;text-align:left;padding-left:75px}
+.actions{display:flex;gap:12px;margin-top:20px}
+button{font:inherit;font-weight:900;cursor:pointer;border-radius:14px;padding:14px 22px;transition:transform .18s,filter .18s}
+button:hover{transform:translateY(-1px);filter:brightness(1.08)}
+.primary{flex:1;border:1px solid #ff7b80;color:#fff;background:linear-gradient(180deg,#ff555b,#cf1724);box-shadow:0 8px 24px rgba(229,30,45,.22)}
+.secondary{border:1px solid rgba(56,189,248,.65);color:#9cddfa;background:rgba(56,189,248,.06)}
+button:disabled{opacity:.6;cursor:wait;transform:none}
+.message{margin:0 0 18px;padding:12px 15px;border-radius:12px;line-height:1.8;background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.35);font-size:13px}
+.message[hidden]{display:none}.message.error{background:rgba(251,113,133,.1);border-color:rgba(251,113,133,.5)}.message.success{background:rgba(52,211,153,.1);border-color:rgba(52,211,153,.4)}
+.note{text-align:center;color:#829bb4;font-size:12px;line-height:1.8;margin:14px 0 0}
+.hidden{display:none!important}
+footer{text-align:center;color:#7892ac;font-size:12px;padding:20px}
+@media(max-width:600px){header{height:65px;padding:0 17px}.logo{font-size:25px}.head-note{font-size:11px}main{margin-top:25px}.steps{gap:7px}.step{font-size:11px;padding:9px 4px}.actions{flex-direction:column}.secondary{width:100%}body:before{left:-155px;opacity:.7}}
+.logo img{display:block;width:54px;height:54px;object-fit:contain;border-radius:10px;filter:drop-shadow(0 0 10px rgba(56,189,248,.25))}
+</style>
+</head>
+<body>
+<div class="globe" aria-hidden="true"></div>
+<header class="site-header"><a class="logo" href="home.html" aria-label="GESSA الرئيسية"><img src="gessa-icon.png" alt="شعار GESSA" width="54" height="54"></a><div class="head-note">مجتمعك، عالمك</div></header>
+<main>
+  <div class="intro">
+    <div class="kicker">GESSA · إعداد الحساب</div>
+    <h1>خطوة واحدة تفصلك عن عالم GESSA</h1>
+    <p>أكمل بيانات ملفك الشخصي لتبدأ رحلتك داخل مجتمعك.</p>
+  </div>
+  <div class="card">
+    <div class="steps" aria-label="خطوات استكمال الحساب">
+      <div class="step active" id="stepPhone">١ · رقم الهاتف</div>
+      <div class="step" id="stepBirth">٢ · تاريخ الميلاد</div>
+    </div>
+    <div id="message" class="message" role="status" aria-live="polite" hidden></div>
+
+    <section id="phoneSection">
+      <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.2"/><path d="M10 5h4M10.5 18.5h3"/></svg></div>
+      <h2>أدخل رقم هاتفك</h2>
+      <p class="desc">اكتب رقم هاتفك للتواصل واستكمال ملفك. لن نرسل إليك أي رسائل تحقق أو SMS.</p>
+      <label for="phone">رقم الهاتف</label>
+      <div class="phone-wrap"><input id="phone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+201xxxxxxxxx" maxlength="20"></div>
+      <div class="actions"><button class="primary" id="savePhone" type="button">حفظ ومتابعة</button></div>
+      <p class="note">يُحفظ الرقم كما أدخلته، دون التحقق من ملكية الرقم في هذه المرحلة.</p>
+    </section>
+
+    <section id="birthSection" class="hidden">
+      <div class="icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 14h3"/></svg></div>
+      <h2>متى يوم ميلادك؟</h2>
+      <p class="desc">أدخل تاريخ ميلادك لإكمال ملفك الشخصي في GESSA.</p>
+      <label for="birthDate">تاريخ الميلاد</label>
+      <input id="birthDate" type="date" autocomplete="bday">
+      <div class="actions">
+        <button class="primary" id="saveBirth" type="button">حفظ ومتابعة إلى GESSA</button>
+        <button class="secondary" id="backPhone" type="button">رجوع</button>
+      </div>
+    </section>
+  </div>
+</main>
+<footer>GESSA — مجتمعك، عالمك</footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  "use strict";
+  const $ = id => document.getElementById(id);
+  let client, user;
+
+  function message(text, type) {
+    const box = $("message");
+    box.textContent = text;
+    box.className = "message" + (type ? " " + type : "");
+    box.hidden = false;
+  }
+  function busy(button, yes, label) {
+    if (yes) { button.dataset.oldText = button.textContent; button.disabled = true; button.textContent = label; }
+    else { button.disabled = false; button.textContent = button.dataset.oldText || button.textContent; }
+  }
+  function showBirth() {
+    $("phoneSection").classList.add("hidden");
+    $("birthSection").classList.remove("hidden");
+    $("stepPhone").classList.remove("active");
+    $("stepPhone").classList.add("done");
+    $("stepBirth").classList.add("active");
+  }
+  function showPhone() {
+    $("phoneSection").classList.remove("hidden");
+    $("birthSection").classList.add("hidden");
+    $("stepPhone").classList.add("active");
+    $("stepPhone").classList.remove("done");
+    $("stepBirth").classList.remove("active");
+  }
+  function normalizePhone(value) {
+    let p = value.trim().replace(/[()\s-]/g, "");
+    if (/^01\d{9}$/.test(p)) p = "+20" + p.slice(1);
+    if (/^0020\d+$/.test(p)) p = "+" + p.slice(2);
+    if (!/^\+[1-9]\d{7,14}$/.test(p)) {
+      throw new Error("اكتب رقمًا صحيحًا مع مفتاح الدولة، مثال: +201xxxxxxxxx");
+    }
+    return p;
+  }
+  async function initialize(clientArg, userArg) {
+    client = clientArg;
+    user = userArg;
+    const { data: profile, error } = await client.from("profiles")
+      .select("phone,date_of_birth").eq("id", user.id).maybeSingle();
+    if (error) throw error;
+    if (!profile) throw new Error("لم نعثر على ملفك الشخصي في قاعدة البيانات. تواصل مع إدارة GESSA.");
+    if (profile.phone) $("phone").value = profile.phone;
+    if (profile.date_of_birth) $("birthDate").value = profile.date_of_birth;
+    if (profile.phone && !profile.date_of_birth) showBirth();
+    if (profile.phone && profile.date_of_birth) location.replace("home.html");
+  }
+  async function savePhone() {
+    const button = $("savePhone");
+    try {
+      busy(button, true, "جارٍ الحفظ...");
+      const phone = normalizePhone($("phone").value);
+      const { error } = await client.from("profiles").update({ phone }).eq("id", user.id);
+      if (error) throw error;
+      $("phone").value = phone;
+      message("تم حفظ رقم الهاتف. بقي إدخال تاريخ الميلاد.", "success");
+      showBirth();
+    } catch (e) {
+      message(e.message || "تعذر حفظ رقم الهاتف.", "error");
+    } finally { busy(button, false); }
+  }
+  async function saveBirth() {
+    const button = $("saveBirth");
+    try {
+      busy(button, true, "جارٍ حفظ البيانات...");
+      const value = $("birthDate").value;
+      if (!value) throw new Error("اختر تاريخ ميلادك أولًا.");
+      const chosen = new Date(value + "T00:00:00");
+      const today = new Date(); today.setHours(0,0,0,0);
+      if (Number.isNaN(chosen.getTime()) || chosen >= today) throw new Error("أدخل تاريخ ميلاد صحيحًا في الماضي.");
+      const { error } = await client.from("profiles").update({ date_of_birth: value }).eq("id", user.id);
+      if (error) throw error;
+      message("اكتمل إعداد حسابك. جارٍ فتح GESSA...", "success");
+      location.href = "home.html";
+    } catch (e) {
+      message(e.message || "تعذر حفظ تاريخ الميلاد.", "error");
+    } finally { busy(button, false); }
+  }
+
+  $("savePhone").addEventListener("click", savePhone);
+  $("saveBirth").addEventListener("click", saveBirth);
+  $("backPhone").addEventListener("click", showPhone);
+
+  if (!window.GESSA || typeof window.GESSA.boot !== "function") {
+    message("تعذر تحميل إعدادات GESSA. تأكد من وجود config.js بجوار هذه الصفحة.", "error");
+  } else {
+    window.GESSA.boot("onboarding", async (c, u) => {
+      try { await initialize(c, u); }
+      catch (e) { message(e.message || "تعذر تحميل بيانات الحساب.", "error"); }
+    });
+  }
+})();
+</script>
+</body>
+</html>

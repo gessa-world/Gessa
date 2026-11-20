@@ -1,19 +1,213 @@
-const $ = id => document.getElementById(id);
-const KEY='gessa_demo_users_v1', SESSION='gessa_demo_session_v1', POSTS='gessa_demo_posts_v1';
-let current=null;
-const users=()=>JSON.parse(localStorage.getItem(KEY)||'[]');
-const saveUsers=x=>localStorage.setItem(KEY,JSON.stringify(x));
-const posts=()=>JSON.parse(localStorage.getItem(POSTS)||'[]');
-const savePosts=x=>localStorage.setItem(POSTS,JSON.stringify(x));
-function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2300)}
-function showTab(tab){document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));$('loginForm').classList.toggle('hidden',tab!=='login');$('signupForm').classList.toggle('hidden',tab!=='signup');$('authMessage').textContent=''}
-document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>showTab(b.dataset.tab)));
-function enter(user){current=user;localStorage.setItem(SESSION,user.email);$('authView').classList.add('hidden');$('appView').classList.remove('hidden');$('logoutBtn').classList.remove('hidden');$('sideName').textContent=user.name;$('avatarInitial').textContent=user.name.charAt(0).toUpperCase();$('composerAvatar').textContent=user.name.charAt(0).toUpperCase();$('profileAvatar').textContent=user.name.charAt(0).toUpperCase();$('profileName').textContent=user.name;$('profileEmail').textContent=user.email;$('welcomeTitle').textContent='أهلًا بك، '+user.name;$('postText').value='';renderPosts();showSection('feed')}
-$('signupForm').addEventListener('submit',e=>{e.preventDefault();let name=$('signupName').value.trim(),email=$('signupEmail').value.trim().toLowerCase(),password=$('signupPassword').value;if(users().some(u=>u.email===email)){$('authMessage').textContent='هذا البريد مسجل بالفعل على هذا الجهاز.';return}let user={name,email,password};saveUsers([...users(),user]);enter(user);toast('تم إنشاء حسابك التجريبي بنجاح')});
-$('loginForm').addEventListener('submit',e=>{e.preventDefault();let email=$('loginEmail').value.trim().toLowerCase(),password=$('loginPassword').value;let user=users().find(u=>u.email===email&&u.password===password);if(!user){$('authMessage').textContent='بيانات الدخول غير صحيحة، أو لم تنشئ حسابًا على هذا الجهاز.';return}enter(user)});
-$('logoutBtn').addEventListener('click',()=>{localStorage.removeItem(SESSION);current=null;$('appView').classList.add('hidden');$('authView').classList.remove('hidden');$('logoutBtn').classList.add('hidden');showTab('login')});
-function showSection(name){['feed','profile','discover','world'].forEach(s=>$(s+'Section').classList.toggle('hidden',s!==name));document.querySelectorAll('.nav-item').forEach(b=>b.classList.toggle('active',b.dataset.section===name));if(name==='profile')$('postCount').textContent=posts().filter(p=>p.email===current.email).length}
-document.querySelectorAll('.nav-item').forEach(b=>b.addEventListener('click',()=>showSection(b.dataset.section)));
-$('publishBtn').addEventListener('click',()=>{let text=$('postText').value.trim();if(!text){toast('اكتب شيئًا قبل النشر');return}let all=posts();all.unshift({id:Date.now(),name:current.name,email:current.email,text,time:new Date().toLocaleString('ar-EG'),likes:0});savePosts(all);$('postText').value='';renderPosts();toast('تم نشر مشاركتك')});
-function renderPosts(){let all=posts();$('postsList').innerHTML='';if(!all.length){$('postsList').innerHTML='<div class="card post"><p class="muted">لا توجد مشاركات حتى الآن. كن أول من يشارك فكرة مع مجتمع GESSA!</p></div>';return}all.forEach(p=>{let el=document.createElement('article');el.className='card post';let head=document.createElement('div');head.className='post-head';let av=document.createElement('div');av.className='avatar';av.textContent=p.name.charAt(0).toUpperCase();let info=document.createElement('div');let strong=document.createElement('strong');strong.textContent=p.name;let small=document.createElement('small');small.textContent=p.time;info.append(strong,small);head.append(av,info);let body=document.createElement('p');body.className='post-text';body.textContent=p.text;let actions=document.createElement('div');actions.className='post-actions';let like=document.createElement('button');like.textContent='♡ إعجاب ('+p.likes+')';like.onclick=()=>{let arr=posts(),item=arr.find(x=>x.id===p.id);if(item){item.likes++;savePosts(arr);renderPosts()}};let comment=document.createElement('span');comment.textContent='◌ التعليقات قريبًا';actions.append(like,comment);el.append(head,body,actions);$('postsList').append(el)})}
-const saved=localStorage.getItem(SESSION);if(saved){let u=users().find(x=>x.email===saved);if(u)enter(u)}
+
+(() => {
+  "use strict";
+
+  const byId = (id) => document.getElementById(id);
+
+  function showMessage(message, type = "info") {
+    const box = byId("homeMessage");
+    if (!box) {
+      console.log(message);
+      return;
+    }
+    box.textContent = message;
+    box.dataset.type = type;
+    box.hidden = false;
+  }
+
+  function escapeHTML(value) {
+    return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      '"': "&quot;",
+      "'": "&#39;"
+    })[char]);
+  }
+
+  function formatDate(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat("ar-EG", {
+      dateStyle: "medium",
+      timeStyle: "short"
+    }).format(date);
+  }
+
+  async function startHome(client, user) {
+    const feed = byId("feed");
+    const form = byId("pf");
+    const input = byId("pb");
+    const submitButton = form?.querySelector('button[type="submit"]');
+
+    if (!client || !user) {
+      showMessage("تعذر الاتصال بالحساب. سجّل الدخول مرة أخرى.", "error");
+      return;
+    }
+
+    async function loadPosts() {
+      if (!feed) return;
+
+      feed.innerHTML = '<p class="empty-state">جارٍ تحميل المنشورات...</p>';
+
+      const { data: posts, error } = await client
+        .from("posts")
+        .select("id,author_id,body,media_url,created_at")
+        .order("created_at", { ascending: false })
+        .limit(50);
+
+      if (error) {
+        console.error("GESSA load posts:", error);
+        feed.innerHTML = '<p class="empty-state">تعذر تحميل المنشورات: ' + escapeHTML(error.message || "") + '</p>';
+        return;
+      }
+
+      if (!posts || posts.length === 0) {
+        feed.innerHTML = '<p class="empty-state">لا توجد منشورات حتى الآن. كن أول من يشارك!</p>';
+        return;
+      }
+
+      const userIds = [...new Set(posts.map((post) => post.author_id).filter(Boolean))];
+      let names = {};
+
+      if (userIds.length) {
+        const { data: profiles, error: profileError } = await client
+          .from("profiles")
+          .select("id,username")
+          .in("id", userIds);
+
+        if (!profileError && profiles) {
+          names = Object.fromEntries(
+            profiles.map((profile) => [profile.id, profile.username || "عضو في GESSA"])
+          );
+        }
+      }
+
+      feed.innerHTML = posts.map((post) => {
+        const author = names[post.author_id] || "عضو في GESSA";
+        const content = escapeHTML(post.body || "");
+        const date = escapeHTML(formatDate(post.created_at));
+        const media = post.media_url
+          ? `<p><a href="${escapeHTML(post.media_url)}" target="_blank" rel="noopener noreferrer">عرض المرفق</a></p>`
+          : "";
+        const deleteButton = post.author_id === user.id
+          ? `<button class="delete-post" type="button" data-delete-id="${escapeHTML(post.id)}">حذف</button>`
+          : "";
+
+        return `
+          <article class="post-card" data-post-id="${escapeHTML(post.id)}">
+            <div class="post-head">
+              <strong>${escapeHTML(author)}</strong>
+              <time>${date}</time>
+            </div>
+            <p class="post-content">${content}</p>
+            ${media}
+            <div class="post-actions">${deleteButton}</div>
+          </article>
+        `;
+      }).join("");
+    }
+
+    if (form && input) {
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const content = input.value.trim();
+
+        if (!content) {
+          showMessage("اكتب شيئًا قبل نشر المشاركة.", "error");
+          input.focus();
+          return;
+        }
+
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "جارٍ النشر...";
+        }
+
+        showMessage("جارٍ نشر مشاركتك...", "info");
+
+        try {
+          const { error } = await client.from("posts").insert({
+            author_id: user.id,
+            body: content
+          });
+
+          if (error) throw error;
+
+          input.value = "";
+          showMessage("تم نشر مشاركتك بنجاح.", "success");
+          await loadPosts();
+        } catch (error) {
+          console.error("GESSA publish post:", error);
+          showMessage(
+            error?.message
+              ? `تعذر نشر المشاركة: ${error.message}`
+              : "تعذر نشر المشاركة. تحقق من اتصال Supabase وصلاحيات جدول posts.",
+            "error"
+          );
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = "نشر";
+          }
+        }
+      });
+    }
+
+    if (feed) {
+      feed.addEventListener("click", async (event) => {
+        const button = event.target.closest("[data-delete-id]");
+        if (!button) return;
+
+        const postId = button.dataset.deleteId;
+        if (!postId || !window.confirm("هل تريد حذف هذه المشاركة؟")) return;
+
+        button.disabled = true;
+
+        const { error } = await client
+          .from("posts")
+          .delete()
+          .eq("id", postId)
+          .eq("author_id", user.id);
+
+        if (error) {
+          console.error("GESSA delete post:", error);
+          showMessage(`تعذر حذف المشاركة: ${error.message}`, "error");
+          button.disabled = false;
+          return;
+        }
+
+        showMessage("تم حذف المشاركة.", "success");
+        await loadPosts();
+      });
+    }
+
+    await loadPosts();
+  }
+
+  function boot() {
+    const config = window.GESSA;
+
+    if (!config || typeof config.boot !== "function") {
+      showMessage(
+        "لم يتم تحميل config.js بشكل صحيح. تأكد أن config.js بجوار home.html وأنه يُحمّل قبله app.js.",
+        "error"
+      );
+      return;
+    }
+
+    config.boot("home", (client, user) => {
+      startHome(client, user).catch((error) => {
+        console.error("GESSA home startup:", error);
+        showMessage("حدث خطأ أثناء تشغيل الصفحة. افتح Console لمعرفة التفاصيل.", "error");
+      });
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();

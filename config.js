@@ -44,10 +44,17 @@ window.GESSA = (function () {
   }
 
   function shell(active, user, c) {
-    if (document.querySelector('header.site-header')) return;
+    if (document.querySelector('header')) return;
     var header = h('header', 'site-header');
-    var logo = h('a', 'logo', 'GESSA');
+    var logo = h('a', 'logo');
     logo.href = 'home.html';
+    logo.setAttribute('aria-label', 'GESSA الرئيسية');
+    var logoImage = h('img');
+    logoImage.src = 'gessa-icon.png';
+    logoImage.alt = 'شعار GESSA';
+    logoImage.width = 52;
+    logoImage.height = 52;
+    logo.appendChild(logoImage);
     var nav = h('nav');
     [['home', 'الرئيسية', 'home.html'], ['shop', 'التسوق', 'shop.html'],
      ['merchant', 'التجار', 'merchant.html'], ['world', 'العالم الافتراضي', 'world.html']]
@@ -69,11 +76,8 @@ out.onclick = async function () {
   out.textContent = 'جارٍ تسجيل الخروج...';
 
   try {
-    var result = await c.auth.signOut();
-
-    if (result.error) {
-      throw result.error;
-    }
+    var result = await c.auth.signOut({ scope: 'local' });
+    if (result && result.error) throw result.error;
 
     location.replace('index.html');
 
