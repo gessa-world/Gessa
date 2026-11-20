@@ -64,6 +64,9 @@ window.GESSA = (function () {
         nav.appendChild(a);
       });
     var right = h('div', 'header-actions');
+    var profileLink = h('a', 'member-profile-link', 'ملفي الشخصي');
+    profileLink.href = 'profile.html';
+    profileLink.setAttribute('aria-label', 'فتح ملفي الشخصي');
     var admin = h('a', 'link', 'الإدارة');
     admin.href = 'admin.html';
     admin.hidden = (user.app_metadata || {}).role !== 'owner';

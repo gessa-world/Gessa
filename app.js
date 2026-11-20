@@ -46,6 +46,15 @@
       return;
     }
 
+    const ownProfile = await client.from("public_profiles").select("username,display_name,avatar_url").eq("id", user.id).maybeSingle();
+    if (!ownProfile.error && ownProfile.data) {
+      const p = ownProfile.data;
+      const name = byId("composerName"); const avatar = byId("composerAvatar");
+      if (name) name.textContent = p.display_name || p.username || "ملفي الشخصي";
+      if (avatar && p.avatar_url) avatar.src = p.avatar_url;
+      for (const link of [name, byId("composerProfileLink")]) if (link) link.href = `profile.html?id=${encodeURIComponent(user.id)}`;
+    }
+
     async function loadPosts() {
       if (!feed) return;
 
@@ -73,19 +82,21 @@
 
       if (userIds.length) {
         const { data: profiles, error: profileError } = await client
-          .from("profiles")
-          .select("id,username")
+          .from("public_profiles")
+          .select("id,username,display_name,avatar_url")
           .in("id", userIds);
 
         if (!profileError && profiles) {
-          names = Object.fromEntries(
-            profiles.map((profile) => [profile.id, profile.username || "عضو في GESSA"])
-          );
+          names = Object.fromEntries(profiles.map((profile) => [profile.id, profile]));
         }
       }
 
       feed.innerHTML = posts.map((post) => {
-        const author = names[post.author_id] || "عضو في GESSA";
+        const authorProfile = names[post.author_id] || { username: "member", display_name: "عضو في GESSA", avatar_url: "" };
+        const author = authorProfile.display_name || authorProfile.username || "عضو في GESSA";
+        const avatar = authorProfile.avatar_url
+          ? `<img class="post-avatar" src="${escapeHTML(authorProfile.avatar_url)}" alt="" loading="lazy">`
+          : `<span class="post-avatar post-avatar-fallback" aria-hidden="true">${escapeHTML((author[0] || "م").toUpperCase())}</span>`;
         const content = escapeHTML(post.body || "");
         const date = escapeHTML(formatDate(post.created_at));
         const media = post.media_url
@@ -96,9 +107,9 @@
           : "";
 
         return `
-          <article class="post-card" data-post-id="${escapeHTML(post.id)}">
+          <article class="post-card" data-post-id="${escapeHTML(post.id)}" data-profile-id="${escapeHTML(post.author_id)}" tabindex="0" role="link" aria-label="فتح الملف الشخصي لـ ${escapeHTML(author)}">
             <div class="post-head">
-              <strong>${escapeHTML(author)}</strong>
+              <a class="post-author" href="profile.html?id=${encodeURIComponent(post.author_id)}" aria-label="الملف الشخصي لـ ${escapeHTML(author)}">${avatar}<span><strong>${escapeHTML(author)}</strong><small>@${escapeHTML(authorProfile.username || "member")}</small></span></a>
               <time>${date}</time>
             </div>
             <p class="post-content">${content}</p>
@@ -158,7 +169,13 @@
     if (feed) {
       feed.addEventListener("click", async (event) => {
         const button = event.target.closest("[data-delete-id]");
-        if (!button) return;
+        if (!button) {
+          if (!event.target.closest("a,button")) {
+            const card = event.target.closest("[data-profile-id]");
+            if (card?.dataset.profileId) location.href = `profile.html?id=${encodeURIComponent(card.dataset.profileId)}`;
+          }
+          return;
+        }
 
         const postId = button.dataset.deleteId;
         if (!postId || !window.confirm("هل تريد حذف هذه المشاركة؟")) return;
