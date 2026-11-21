@@ -1,109 +1,552 @@
+
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#061226">
-<title>الملف الشخصي | GESSA</title>
-  <link rel="icon" type="image/png" href="gessa-icon.png"><link rel="apple-touch-icon" href="gessa-icon.png">
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
+  <title>الملف الشخصي | GESSA</title>
+
+  <link rel="icon" type="image/png" href="gessa-icon.png">
+  <link rel="apple-touch-icon" href="gessa-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+
   <link rel="stylesheet" href="assets/app.css">
+
   <style>
-    .profile-wrap{
-  width:min(100% - 24px,1180px);
-  margin:26px auto 60px;
-}
-    .profile-cover{
-  width:100%;
-  height:340px;
-  border-radius:22px 22px 0 0;
-  background:radial-gradient(circle at 75% 20%,#38bdf866,transparent 32%),linear-gradient(125deg,#123d66,#07172e 70%);
-  background-size:contain;
-  background-repeat:no-repeat;
-  background-position:center;
-  background-color:#07172e;
-  border:1px solid #38bdf844;
-}
-    .profile-main{background:linear-gradient(145deg,#102b49,#0d2038);border:1px solid #38bdf833;border-top:0;border-radius:0 0 22px 22px;padding:0 22px 22px;margin-bottom:18px}
-    .profile-identity{display:flex;align-items:end;gap:16px;margin-top:-58px;position:relative;flex-wrap:wrap}
-    .avatar-xl{width:124px;height:124px;border-radius:50%;border:5px solid #102b49;background:#071a30;object-fit:cover;box-shadow:0 8px 28px #0008}
-    .profile-title{padding:0 0 12px;flex:1;min-width:180px}.profile-title h1{margin:0 0 4px}.profile-title p{margin:0;color:#a8bacb}
-    .profile-bio{line-height:1.9;color:#d8e6f4;margin:14px 0 4px;white-space:pre-wrap}
-    .profile-edit{display:grid;gap:10px;margin-top:16px;padding-top:16px;border-top:1px solid #38bdf833}
-    .profile-edit[hidden]{display:none}.profile-edit label{font-size:13px;color:#a8bacb}
-    .profile-edit input,.profile-edit textarea{margin:6px 0 0}
-    .profile-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .profile-stats{display:flex;gap:22px;flex-wrap:wrap;color:#b9cde0;font-size:13px;margin-top:12px}
-    .profile-posts{display:grid;gap:14px}.profile-post{background:#102744;border:1px solid #24527a;border-radius:16px;padding:18px}
-    .profile-post time{color:#a8bacb;font-size:12px}.profile-post p{white-space:pre-wrap;line-height:1.9;overflow-wrap:anywhere}
-    .avatar-fallback{display:grid;place-items:center;color:#38bdf8;font-size:40px}
-    @media(max-width:600px){.profile-cover{height:230px}..avatar-xl{
-  width:120px;
-  height:120px;
-  min-width:120px;
-  border-radius:16px;
-}.profile-main{padding:0 14px 18px}.profile-identity{margin-top:-48px}}.profile-wrap{
-  width:calc(100% - 24px);
-  max-width:1200px;
-  margin:26px auto 60px;
-}
+
+    /* =====================================
+       GESSA PROFILE - GENERAL WIDTH
+    ===================================== */
+
+    .profile-wrap {
+      width: calc(100% - 24px);
+      max-width: 1200px;
+      margin: 26px auto 60px;
+    }
+
+    /* الغلاف وبطاقة التايم لاين لهما نفس العرض */
+    .profile-wrap > .card {
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    /* =====================================
+       PROFILE COVER
+    ===================================== */
+
+    .profile-cover {
+      display: block;
+      width: 100%;
+      height: 430px;
+      box-sizing: border-box;
+
+      border-radius: 22px 22px 0 0;
+
+      background:
+        radial-gradient(circle at 75% 20%, #38bdf866, transparent 32%),
+        linear-gradient(125deg, #123d66, #07172e 70%);
+
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-color: #07172e;
+
+      border: 1px solid #38bdf844;
+    }
+
+    /* =====================================
+       PROFILE MAIN
+    ===================================== */
+
+    .profile-main {
+      background: linear-gradient(145deg, #102b49, #0d2038);
+      border: 1px solid #38bdf833;
+      border-top: 0;
+      border-radius: 0 0 22px 22px;
+      padding: 0 22px 22px;
+      margin-bottom: 18px;
+    }
+
+    .profile-identity {
+      display: flex;
+      align-items: end;
+      gap: 16px;
+      margin-top: -58px;
+      position: relative;
+      flex-wrap: wrap;
+    }
+
+    /* =====================================
+       LARGE SQUARE PROFILE AVATAR
+    ===================================== */
+
+    .avatar-xl {
+      width: 240px;
+      height: 240px;
+      min-width: 240px;
+      flex: 0 0 240px;
+
+      aspect-ratio: 1 / 1;
+      border-radius: 20px;
+      border: 6px solid #102b49;
+
+      background: #071a30;
+      object-fit: cover;
+      object-position: center;
+
+      box-shadow: 0 8px 28px #0008;
+    }
+
+    .profile-title {
+      padding: 0 0 12px;
+      flex: 1;
+      min-width: 180px;
+    }
+
+    .profile-title h1 {
+      margin: 0 0 4px;
+    }
+
+    .profile-title p {
+      margin: 0;
+      color: #a8bacb;
+    }
+
+    .profile-bio {
+      line-height: 1.9;
+      color: #d8e6f4;
+      margin: 14px 0 4px;
+      white-space: pre-wrap;
+    }
+
+    /* =====================================
+       EDIT PROFILE
+    ===================================== */
+
+    .profile-edit {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #38bdf833;
+    }
+
+    .profile-edit[hidden] {
+      display: none;
+    }
+
+    .profile-edit label {
+      font-size: 13px;
+      color: #a8bacb;
+    }
+
+    .profile-edit input,
+    .profile-edit textarea {
+      margin: 6px 0 0;
+    }
+
+    .profile-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+
+    .profile-stats {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      color: #b9cde0;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    /* =====================================
+       PERSONAL TIMELINE
+       ORIGINAL TIMELINE STYLING PRESERVED
+    ===================================== */
+
+    .profile-posts {
+      display: grid;
+      gap: 14px;
+    }
+
+    .profile-post {
+      background: #102744;
+      border: 1px solid #24527a;
+      border-radius: 16px;
+      padding: 18px;
+    }
+
+    .profile-post time {
+      color: #a8bacb;
+      font-size: 12px;
+    }
+
+    .profile-post p {
+      white-space: pre-wrap;
+      line-height: 1.9;
+      overflow-wrap: anywhere;
+    }
+
+    .avatar-fallback {
+      display: grid;
+      place-items: center;
+      color: #38bdf8;
+      font-size: 40px;
+    }
+
+    /* =====================================
+       MOBILE
+    ===================================== */
+
+    @media (max-width: 600px) {
+
+      .profile-wrap {
+        width: calc(100% - 16px);
+        margin: 16px auto 40px;
+      }
+
+      .profile-cover {
+        width: 100%;
+        height: 260px;
+      }
+
+      .avatar-xl {
+        width: 145px;
+        height: 145px;
+        min-width: 145px;
+        flex: 0 0 145px;
+
+        aspect-ratio: 1 / 1;
+        border-radius: 16px;
+      }
+
+      .profile-main {
+        padding: 0 14px 18px;
+      }
+
+      .profile-identity {
+        margin-top: -48px;
+      }
+    }
+
   </style>
 </head>
+
 <body>
+
 <main class="profile-wrap">
+
   <div id="profileMessage" class="toast hidden" role="status"></div>
+
+  <!-- PROFILE COVER AND INFORMATION -->
+
   <section class="card" style="padding:0;overflow:hidden">
+
     <div class="profile-cover" id="coverImage"></div>
+
     <div class="profile-main">
+
       <div class="profile-identity">
-        <img id="avatarImage" class="avatar-xl" src="" alt="الصورة الشخصية" onerror="this.style.display='none';document.getElementById('avatarFallback').hidden=false">
+
+        <img
+          id="avatarImage"
+          class="avatar-xl"
+          src=""
+          alt="الصورة الشخصية"
+          onerror="this.style.display='none';document.getElementById('avatarFallback').hidden=false"
+        >
+
         <div id="avatarFallback" class="avatar-xl avatar-fallback" hidden>◉</div>
-        <div class="profile-title"><h1 id="displayName">جارٍ تحميل الملف...</h1><p id="username"></p></div>
+
+        <div class="profile-title">
+          <h1 id="displayName">جارٍ تحميل الملف...</h1>
+          <p id="username"></p>
+        </div>
+
         <div class="profile-actions" id="profileActions"></div>
+
       </div>
+
       <p class="profile-bio" id="bioText"></p>
-      <div class="profile-stats"><span id="joinedDate"></span><span id="postCount"></span></div>
+
+      <div class="profile-stats">
+        <span id="joinedDate"></span>
+        <span id="postCount"></span>
+      </div>
+
+      <!-- EDIT PROFILE FORM -->
+
       <form class="profile-edit" id="editForm" hidden>
-        <label>الاسم الظاهر<input name="display_name" maxlength="60" placeholder="اسمك الذي يظهر للأعضاء"></label>
-        <label>نبذة عنك<textarea name="bio" rows="3" maxlength="500" placeholder="اكتب نبذة قصيرة عنك"></textarea></label>
-        <label>صورتك الشخصية<input name="avatar" type="file" accept="image/png,image/jpeg,image/webp"></label>
-        <label>صورة الغلاف<input name="cover" type="file" accept="image/png,image/jpeg,image/webp"></label>
+
+        <label>
+          الاسم الظاهر
+          <input name="display_name" maxlength="60" placeholder="اسمك الذي يظهر للأعضاء">
+        </label>
+
+        <label>
+          نبذة عنك
+          <textarea name="bio" rows="3" maxlength="500" placeholder="اكتب نبذة قصيرة عنك"></textarea>
+        </label>
+
+        <label>
+          صورتك الشخصية
+          <input name="avatar" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+
+        <label>
+          صورة الغلاف
+          <input name="cover" type="file" accept="image/png,image/jpeg,image/webp">
+        </label>
+
         <button class="primary" type="submit">حفظ التعديلات</button>
+
       </form>
+
     </div>
+
   </section>
-  <section class="card"><h2>المنشورات الشخصية</h2><div id="timeline" class="profile-posts"><p class="muted">جارٍ تحميل المشاركات...</p></div></section>
+
+  <!-- PERSONAL TIMELINE -->
+
+  <section class="card">
+
+    <h2>المنشورات الشخصية</h2>
+
+    <div id="timeline" class="profile-posts">
+      <p class="muted">جارٍ تحميل المشاركات...</p>
+    </div>
+
+  </section>
+
 </main>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="config.js"></script>
+
+<!-- SUPABASE -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="config.js"></script>
+
 <script>
 (() => {
- const $=id=>document.getElementById(id), esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- const date=v=>v?new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(new Date(v)):'';
- function msg(t){$('profileMessage').textContent=t;$('profileMessage').classList.remove('hidden');setTimeout(()=>$('profileMessage').classList.add('hidden'),4500)}
- GESSA.boot('profile',async(c,user)=>{
-   const requested=new URLSearchParams(location.search).get('id');
-   const profileId=requested||user.id; const isMine=profileId===user.id;
-   let q=await c.from('public_profiles').select('id,username,display_name,avatar_url,cover_url,bio,created_at').eq('id',profileId).maybeSingle();
-   if(q.error){$('displayName').textContent='تعذر تحميل الملف الشخصي';$('timeline').textContent=q.error.message;return;}
-   if(!q.data){$('displayName').textContent='هذا الملف الشخصي غير متاح';$('timeline').textContent='';return;}
-   let p=q.data;
-   const avatar=p.avatar_url||'';if(avatar){$('avatarImage').src=avatar;$('avatarImage').style.display='block';$('avatarFallback').hidden=true;}else{$('avatarImage').style.display='none';$('avatarFallback').hidden=false;}
-   if(p.cover_url)$('coverImage').style.backgroundImage=`url("${String(p.cover_url).replace(/["\\]/g,'')}")`;
-   $('displayName').textContent=p.display_name||p.username||'عضو في GESSA';$('username').textContent='@'+(p.username||'member');$('bioText').textContent=p.bio||'لم يضف هذا العضو نبذة تعريفية بعد.';$('joinedDate').textContent='عضو منذ '+date(p.created_at);
-   const actions=$('profileActions');
-   if(isMine){const edit=document.createElement('button');edit.className='primary';edit.type='button';edit.textContent='تعديل ملفي الشخصي';edit.onclick=()=>$('editForm').hidden=!$('editForm').hidden;actions.append(edit);}
-   else {const follow=document.createElement('button');follow.className='primary';follow.type='button';follow.textContent='متابعة قريبًا';follow.disabled=true;actions.append(follow);}
-   const posts=await c.from('posts').select('id,body,media_url,created_at').eq('author_id',profileId).order('created_at',{ascending:false}).limit(100);
-   if(posts.error){$('timeline').textContent='تعذر تحميل المنشورات: '+posts.error.message;return;}
-   $('postCount').textContent='عدد المنشورات: '+(posts.data||[]).length;
-   $('timeline').innerHTML=(posts.data||[]).length?(posts.data||[]).map(x=>`<article class="profile-post"><time>${esc(date(x.created_at))}</time><p>${esc(x.body||'')}</p>${x.media_url?`<a href="${esc(x.media_url)}" target="_blank" rel="noopener">عرض المرفق</a>`:''}</article>`).join(''):'<p class="muted">لا توجد منشورات حتى الآن.</p>';
-   if(isMine){const form=$('editForm');form.elements.display_name.value=p.display_name||'';form.elements.bio.value=p.bio||'';
-    form.addEventListener('submit',async e=>{e.preventDefault();const b=form.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ...';try{
-      const updates={display_name:form.elements.display_name.value.trim(),bio:form.elements.bio.value.trim()};
-      for(const [field,key] of [['avatar','avatar_url'],['cover','cover_url']]){const file=form.elements[field].files[0];if(file){if(file.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${user.id}/${field}-${Date.now()}.${ext}`;const up=await c.storage.from('profile-media').upload(path,file,{upsert:true,contentType:file.type});if(up.error)throw up.error;const pub=c.storage.from('profile-media').getPublicUrl(path);updates[key]=pub.data.publicUrl;}}
-      const saved=await c.from('profiles').update(updates).eq('id',user.id);if(saved.error)throw saved.error;msg('تم تحديث ملفك الشخصي.');location.reload();
-    }catch(err){msg('تعذر الحفظ: '+(err.message||'خطأ غير معروف'));}finally{b.disabled=false;b.textContent='حفظ التعديلات';}});
+
+ const $ = id => document.getElementById(id);
+
+ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
+   '&': '&amp;',
+   '<': '&lt;',
+   '>': '&gt;',
+   '"': '&quot;',
+   "'": '&#39;'
+ }[c]));
+
+ const date = v => v ? new Intl.DateTimeFormat('ar-EG', {
+   dateStyle: 'medium'
+ }).format(new Date(v)) : '';
+
+ function msg(t) {
+   $('profileMessage').textContent = t;
+   $('profileMessage').classList.remove('hidden');
+
+   setTimeout(() => $('profileMessage').classList.add('hidden'), 4500);
+ }
+
+ GESSA.boot('profile', async (c, user) => {
+
+   const requested = new URLSearchParams(location.search).get('id');
+
+   const profileId = requested || user.id;
+   const isMine = profileId === user.id;
+
+   let q = await c
+     .from('public_profiles')
+     .select('id,username,display_name,avatar_url,cover_url,bio,created_at')
+     .eq('id', profileId)
+     .maybeSingle();
+
+   if (q.error) {
+     $('displayName').textContent = 'تعذر تحميل الملف الشخصي';
+     $('timeline').textContent = q.error.message;
+     return;
    }
+
+   if (!q.data) {
+     $('displayName').textContent = 'هذا الملف الشخصي غير متاح';
+     $('timeline').textContent = '';
+     return;
+   }
+
+   let p = q.data;
+
+   const avatar = p.avatar_url || '';
+
+   if (avatar) {
+     $('avatarImage').src = avatar;
+     $('avatarImage').style.display = 'block';
+     $('avatarFallback').hidden = true;
+   } else {
+     $('avatarImage').style.display = 'none';
+     $('avatarFallback').hidden = false;
+   }
+
+   if (p.cover_url) {
+     $('coverImage').style.backgroundImage =
+       `url("${String(p.cover_url).replace(/["\\]/g, '')}")`;
+   }
+
+   $('displayName').textContent =
+     p.display_name || p.username || 'عضو في GESSA';
+
+   $('username').textContent = '@' + (p.username || 'member');
+
+   $('bioText').textContent =
+     p.bio || 'لم يضف هذا العضو نبذة تعريفية بعد.';
+
+   $('joinedDate').textContent = 'عضو منذ ' + date(p.created_at);
+
+   const actions = $('profileActions');
+
+   if (isMine) {
+
+     const edit = document.createElement('button');
+
+     edit.className = 'primary';
+     edit.type = 'button';
+     edit.textContent = 'تعديل ملفي الشخصي';
+
+     edit.onclick = () => $('editForm').hidden = !$('editForm').hidden;
+
+     actions.append(edit);
+
+   } else {
+
+     const follow = document.createElement('button');
+
+     follow.className = 'primary';
+     follow.type = 'button';
+     follow.textContent = 'متابعة قريبًا';
+     follow.disabled = true;
+
+     actions.append(follow);
+   }
+
+   const posts = await c
+     .from('posts')
+     .select('id,body,media_url,created_at')
+     .eq('author_id', profileId)
+     .order('created_at', { ascending: false })
+     .limit(100);
+
+   if (posts.error) {
+     $('timeline').textContent = 'تعذر تحميل المنشورات: ' + posts.error.message;
+     return;
+   }
+
+   $('postCount').textContent =
+     'عدد المنشورات: ' + (posts.data || []).length;
+
+   $('timeline').innerHTML = (posts.data || []).length
+     ? (posts.data || []).map(x => `
+       <article class="profile-post">
+         <time>${esc(date(x.created_at))}</time>
+         <p>${esc(x.body || '')}</p>
+         ${x.media_url ? `
+           <a href="${esc(x.media_url)}" target="_blank" rel="noopener">
+             عرض المرفق
+           </a>` : ''}
+       </article>
+     `).join('')
+     : '<p class="muted">لا توجد منشورات حتى الآن.</p>';
+
+   if (isMine) {
+
+     const form = $('editForm');
+
+     form.elements.display_name.value = p.display_name || '';
+     form.elements.bio.value = p.bio || '';
+
+     form.addEventListener('submit', async e => {
+
+       e.preventDefault();
+
+       const b = form.querySelector('button[type=submit]');
+
+       b.disabled = true;
+       b.textContent = 'جارٍ الحفظ...';
+
+       try {
+
+         const updates = {
+           display_name: form.elements.display_name.value.trim(),
+           bio: form.elements.bio.value.trim()
+         };
+
+         for (const [field, key] of [
+           ['avatar', 'avatar_url'],
+           ['cover', 'cover_url']
+         ]) {
+
+           const file = form.elements[field].files[0];
+
+           if (file) {
+
+             if (file.size > 5 * 1024 * 1024) {
+               throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');
+             }
+
+             const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+
+             const path = `${user.id}/${field}-${Date.now()}.${ext}`;
+
+             const up = await c.storage
+               .from('profile-media')
+               .upload(path, file, {
+                 upsert: true,
+                 contentType: file.type
+               });
+
+             if (up.error) throw up.error;
+
+             const pub = c.storage
+               .from('profile-media')
+               .getPublicUrl(path);
+
+             updates[key] = pub.data.publicUrl;
+           }
+         }
+
+         const saved = await c
+           .from('profiles')
+           .update(updates)
+           .eq('id', user.id);
+
+         if (saved.error) throw saved.error;
+
+         msg('تم تحديث ملفك الشخصي.');
+
+         location.reload();
+
+       } catch (err) {
+
+         msg('تعذر الحفظ: ' + (err.message || 'خطأ غير معروف'));
+
+       } finally {
+
+         b.disabled = false;
+         b.textContent = 'حفظ التعديلات';
+       }
+
+     });
+   }
+
  });
+
 })();
 </script>
-</body></html>
+
+</body>
+</html>
