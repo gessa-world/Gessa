@@ -2,13 +2,27 @@
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#061226"><title>الملف الشخصي | GESSA">
+  <meta name="theme-color" content="#061226">
+<title>الملف الشخصي | GESSA</title>
   <link rel="icon" type="image/png" href="gessa-icon.png"><link rel="apple-touch-icon" href="gessa-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="assets/app.css">
   <style>
-    .profile-wrap{width:min(100% - 28px,980px);margin:26px auto 60px}
-    .profile-cover{height:210px;border-radius:22px 22px 0 0;background:radial-gradient(circle at 75% 20%,#38bdf866,transparent 32%),linear-gradient(125deg,#123d66,#07172e 70%);background-size:cover;background-position:center;border:1px solid #38bdf844}
+    .profile-wrap{
+  width:min(100% - 24px,1180px);
+  margin:26px auto 60px;
+}
+    .profile-cover{
+  width:100%;
+  height:340px;
+  border-radius:22px 22px 0 0;
+  background:radial-gradient(circle at 75% 20%,#38bdf866,transparent 32%),linear-gradient(125deg,#123d66,#07172e 70%);
+  background-size:contain;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-color:#07172e;
+  border:1px solid #38bdf844;
+}
     .profile-main{background:linear-gradient(145deg,#102b49,#0d2038);border:1px solid #38bdf833;border-top:0;border-radius:0 0 22px 22px;padding:0 22px 22px;margin-bottom:18px}
     .profile-identity{display:flex;align-items:end;gap:16px;margin-top:-58px;position:relative;flex-wrap:wrap}
     .avatar-xl{width:124px;height:124px;border-radius:50%;border:5px solid #102b49;background:#071a30;object-fit:cover;box-shadow:0 8px 28px #0008}
@@ -22,7 +36,16 @@
     .profile-posts{display:grid;gap:14px}.profile-post{background:#102744;border:1px solid #24527a;border-radius:16px;padding:18px}
     .profile-post time{color:#a8bacb;font-size:12px}.profile-post p{white-space:pre-wrap;line-height:1.9;overflow-wrap:anywhere}
     .avatar-fallback{display:grid;place-items:center;color:#38bdf8;font-size:40px}
-    @media(max-width:600px){.profile-cover{height:150px}.avatar-xl{width:100px;height:100px}.profile-main{padding:0 14px 18px}.profile-identity{margin-top:-48px}}
+    @media(max-width:600px){.profile-cover{height:230px}..avatar-xl{
+  width:120px;
+  height:120px;
+  min-width:120px;
+  border-radius:16px;
+}.profile-main{padding:0 14px 18px}.profile-identity{margin-top:-48px}}.profile-wrap{
+  width:calc(100% - 24px);
+  max-width:1200px;
+  margin:26px auto 60px;
+}
   </style>
 </head>
 <body>
