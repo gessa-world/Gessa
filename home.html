@@ -9,17 +9,27 @@
   <link rel="apple-touch-icon" href="gessa-icon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800;900&family=Tajawal:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
   <style>
     :root {
       color-scheme: dark;
       --navy: #06245f;
-      --card: #102744;
-      --line: #24527a;
+      --navy-deep: #03163f;
+      --panel: #0b2c68;
+      --panel-2: #0a2458;
+      --line: #4775a8;
       --cyan: #38bdf8;
       --text: #f4f7fb;
-      --muted: #a8bacb;
+      --muted: #b8cce4;
+      --pink: #ff58d6;
+      --purple: #7b23c7;
+      --orange: #ff8700;
+      --lime: #a0ff4c;
+      --green: #28b64b;
+      --yellow: #fff000;
+      --red: #ff1010;
+      --blue: #08b8ff;
       font-family: "Cairo", Tahoma, Arial, sans-serif;
     }
 
@@ -30,348 +40,1559 @@
       min-height: 100vh;
       overflow-x: hidden;
       color: var(--text);
-      background: #061b4a;
+      background:
+        radial-gradient(ellipse at 50% 0%, rgba(20,91,187,.25), transparent 55rem),
+        linear-gradient(180deg, #06245f 0%, #041d50 48%, #03163f 100%);
     }
     a { color: inherit; text-decoration: none; }
     button, a { -webkit-tap-highlight-color: transparent; }
 
-    /* The supplied reference artwork is the visual source of truth.
-       Real transparent link hotspots sit exactly over its five controls. */
-    .hero-frame {
-      width: min(100%, 1599px);
+    /* TOP ROTATING GESSA PLATE */
+    .plate-viewport {
+      width: 100%;
+      /* Keep the complete platter 1 cm below the top edge/header. */
+      padding: 1cm 10px 0;
+      margin: 0;
+      overflow: visible;
+      perspective: 1500px;
+    }
+    .plate-stage {
+      /* Tight crop around the oval plate: no empty square canvas below it. */
+      width: min(100%, 1160px);
       margin: 0 auto;
+      aspect-ratio: 1130 / 465;
       position: relative;
       isolation: isolate;
-      background: #06245f;
+      perspective: 1500px;
+      perspective-origin: 50% 50%;
+      transform-style: preserve-3d;
+      filter: drop-shadow(0 18px 24px rgba(0,0,0,.30));
     }
-    .hero-art {
+    .plate-svg {
       display: block;
       width: 100%;
-      height: auto;
-      aspect-ratio: 1096 / 678;
-      object-fit: contain;
-      user-select: none;
-      -webkit-user-drag: none;
-      animation: artworkReveal .7s ease-out both;
+      height: 100%;
+      overflow: visible;
+      transform-style: preserve-3d;
     }
-    @keyframes artworkReveal {
-      from { opacity: .35; filter: brightness(.72); }
-      to { opacity: 1; filter: brightness(1); }
+    .plate-positioner { transform-style: preserve-3d; }
+    .plate-squash,
+    .plate-round-face { transform: none; }
+    .plate-rotor {
+      /* One exact ellipse-preserving SVG matrix is updated around (565,240).
+         The platter face stays fully visible while its sections whirl inside the oval. */
+      will-change: transform;
+    }
+    .plate-stage:focus-within .counter-label,
+    .plate-stage.is-paused .counter-label {
+      animation-play-state: paused;
     }
 
-    .hotspot {
-      position: absolute;
-      display: block;
-      z-index: 5;
-      background: transparent;
-      border: 0;
-      outline: 0;
+    .sector-link {
       cursor: pointer;
-      transform: translateZ(0);
-      -webkit-tap-highlight-color: transparent;
-      touch-action: manipulation;
-      clip-path: var(--hit-shape);
-      transition: transform .16s ease, filter .16s ease;
+      outline: none;
+      transform-box: fill-box;
+      transform-origin: center center;
+      transition: transform .16s ease, filter .18s ease;
+      /* Raised glossy slices with a deep, clean lower bevel. */
+      filter:
+        drop-shadow(0 25px 0 rgba(1, 13, 43, .96))
+        drop-shadow(0 33px 11px rgba(0, 0, 0, .48))
+        drop-shadow(0 0 4px rgba(255,255,255,.34))
+        drop-shadow(0 0 9px rgba(45,210,255,.16));
     }
-    .hotspot::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      display: block;
+    .sector-fill {
+      stroke: rgba(255,255,255,.88);
+      stroke-width: 4.4;
+      stroke-linejoin: round;
+      paint-order: stroke fill;
+      transform-box: fill-box;
+      transform-origin: center;
+      filter: saturate(1.34) contrast(1.14) brightness(1.04)
+        drop-shadow(0 0 5px rgba(255,255,255,.42))
+        drop-shadow(0 0 10px currentColor);
+      transition: filter .16s ease, stroke .16s ease, stroke-width .16s ease;
+    }
+    /* A touched/hovered slice presses down and becomes the luminous slice. */
+    .sector-link:hover,
+    .sector-link.is-pointer-active,
+    .sector-link:focus-visible {
+      transform: translateZ(-15px) scale(.985);
+      filter:
+        drop-shadow(0 4px 0 rgba(1, 13, 43, .95))
+        drop-shadow(0 9px 6px rgba(0, 0, 0, .46));
+    }
+    .sector-link:hover .sector-fill,
+    .sector-link.is-pointer-active .sector-fill,
+    .sector-link:focus-visible .sector-fill {
+      filter: brightness(1.38) saturate(1.42) contrast(1.12)
+        drop-shadow(0 0 13px currentColor)
+        drop-shadow(0 0 30px currentColor)
+        drop-shadow(0 0 48px currentColor)
+        drop-shadow(0 0 10px rgba(255,255,255,.78));
+      stroke: #fff;
+      stroke-width: 5;
+    }
+    .sector-link:active {
+      transform: translateZ(-23px) scale(.972);
+      filter: drop-shadow(0 2px 0 rgba(1, 13, 43, .95));
+    }
+    .sector-link:active .sector-fill {
+      filter: brightness(1.42) saturate(1.38)
+        drop-shadow(0 0 14px currentColor)
+        drop-shadow(0 0 36px currentColor);
+    }
+    .sector-link:focus-visible .sector-fill { stroke-width: 6; }
+    .sector-label {
+      font-family: "Cairo", Tahoma, sans-serif;
+      font-weight: 900;
+      paint-order: stroke fill;
+      stroke: rgba(2, 15, 48, .58);
+      stroke-width: 1.9px;
+      stroke-linejoin: round;
       pointer-events: none;
-      opacity: 0;
-      /* A nearly transparent screen layer keeps the artwork lettering crisp. */
-      background: rgba(255,255,255,.018);
+      text-anchor: middle;
+      dominant-baseline: middle;
+      direction: rtl;
+      unicode-bidi: plaintext;
+      text-rendering: geometricPrecision;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.92))
+        drop-shadow(0 0 5px rgba(255,255,255,.34))
+        drop-shadow(0 0 9px rgba(0,0,0,.36));
+      transition: stroke-width .28s ease, filter .22s ease, letter-spacing .24s ease;
+    }
+    /* Clear, elegant Arabic lettering for the two curved outer titles. */
+    .world-sector-label,
+    .profile-sector-label {
+      font-family: "Tajawal", "Cairo", Tahoma, sans-serif;
+      font-weight: 800;
+      stroke-width: 1.05px;
+      stroke-linejoin: round;
+      letter-spacing: 0;
+      font-kerning: normal;
+    }
+    .sector-link:hover .sector-label,
+    .sector-link.is-pointer-active .sector-label,
+    .sector-link:focus-visible .sector-label {
+      opacity: 1;
+      stroke: rgba(255,255,255,.92);
+      stroke-width: 2.6px;
+      font-weight: 900;
+      letter-spacing: .45px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.92))
+        drop-shadow(0 0 10px currentColor)
+        drop-shadow(0 0 21px currentColor)
+        drop-shadow(0 0 29px rgba(255,255,255,.76));
+    }
+    .sector-link:hover .center-label,
+    .sector-link.is-pointer-active .center-label,
+    .sector-link:focus-visible .center-label {
+      stroke: rgba(255,255,255,.96);
+      stroke-width: 3.1px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.7))
+        drop-shadow(0 0 11px #fff000)
+        drop-shadow(0 0 23px #fff000)
+        drop-shadow(0 0 32px rgba(255,255,255,.86));
+    }
+    .sector-link.is-current .sector-label,
+    .sector-link.is-current .center-label {
+      opacity: 1;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.82))
+        drop-shadow(0 0 7px currentColor)
+        drop-shadow(0 0 13px currentColor);
+    }
+    .sector-link.is-current .center-label {
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.84))
+        drop-shadow(0 0 8px #fff000)
+        drop-shadow(0 0 15px rgba(255,240,0,.78));
+    }
+    /* Labels are part of the same face and rotate with their own colored sector. */
+    .counter-label { pointer-events: none; }
+    .separator-bed {
+      fill: none;
+      stroke: #031638;
+      stroke-width: 12;
+      stroke-linecap: butt;
+      stroke-linejoin: round;
+      pointer-events: none;
+      opacity: .96;
+    }
+    .separator {
+      fill: none;
+      stroke-width: 5;
+      stroke-linecap: butt;
+      stroke-linejoin: round;
+      pointer-events: none;
+      filter: drop-shadow(0 2px 1px rgba(0,0,0,.82));
+    }
+    .outer-rim {
+      fill: none;
+      /* The red line's outer edge is exactly tangent to the platter's outer boundary.
+         Its stroke is clipped to the platter silhouette, so no red pixel can extend outside. */
+      stroke: #ff1717;
+      stroke-width: 6;
+      stroke-linecap: butt;
+      stroke-linejoin: round;
+      vector-effect: non-scaling-stroke;
+      shape-rendering: geometricPrecision;
+      clip-path: url(#dishOuterEdgeClip);
+      /* Clipped to the exact outer ellipse: the red line touches the rim from inside. */
+      filter: none;
+      pointer-events: none;
+    }
+    .outer-rim-glow {
+      fill: none;
+      stroke: #ff2929;
+      stroke-width: 15;
+      opacity: .22;
+      pointer-events: none;
+      clip-path: url(#dishOuterEdgeClip);
+      filter: url(#rimSoftGlow);
+    }
+    .plate-surface-sweep {
+      fill: url(#dishSurfaceSweep);
+      opacity: .62;
+      pointer-events: none;
+      clip-path: url(#dishOuterEdgeClip);
       mix-blend-mode: screen;
-      filter: drop-shadow(0 0 8px var(--pulse-color))
-              drop-shadow(0 0 18px var(--pulse-color))
-              drop-shadow(0 0 30px var(--pulse-color));
-      transition: opacity .14s ease;
     }
-    .hotspot:hover {
-      transform: scale(1.012);
-      filter: brightness(1.08) drop-shadow(0 0 10px var(--pulse-color));
+    .plate-sparkle {
+      fill: #fff;
+      opacity: .98;
+      pointer-events: none;
+      filter: drop-shadow(0 0 6px #fff) drop-shadow(0 0 16px #00efff) drop-shadow(0 0 29px #00aaff) drop-shadow(0 0 42px rgba(255,255,255,.78));
+      transform-box: fill-box;
+      transform-origin: center;
+      animation: plateSparkle 1.7s ease-in-out infinite;
     }
-    .hotspot:hover::after { opacity: .25; }
-    .hotspot:active {
-      transform: translateY(3px) scale(.985);
-      filter: brightness(1.2) drop-shadow(0 0 16px var(--pulse-color));
-      transition-duration: .06s;
+    .plate-sparkle:nth-child(2) { animation-delay: -.55s; }
+    .plate-sparkle:nth-child(3) { animation-delay: -1.1s; }
+    .plate-sparkle:nth-child(4) { animation-delay: -.8s; }
+    .plate-sparkle:nth-child(5) { animation-delay: -.25s; }
+    .plate-sparkle:nth-child(6) { animation-delay: -.95s; }
+    @keyframes plateSparkle {
+      0%, 100% { opacity: .28; transform: scale(.72); }
+      45% { opacity: 1; transform: scale(1.22); }
+      60% { opacity: .84; transform: scale(1); }
     }
-    .hotspot:active::after { opacity: .58; }
-    .hotspot:focus-visible {
-      outline: 3px solid #fff;
-      outline-offset: 5px;
-      filter: drop-shadow(0 0 12px #fff);
+    .plate-glint-line {
+      fill: none;
+      stroke: url(#plateShine);
+      stroke-width: 6;
+      stroke-linecap: round;
+      stroke-dasharray: 150 520;
+      stroke-dashoffset: 670;
+      opacity: .9;
+      pointer-events: none;
+      filter: drop-shadow(0 0 7px rgba(255,255,255,1)) drop-shadow(0 0 18px rgba(0,225,255,.92)) drop-shadow(0 0 31px rgba(0,120,255,.68));
+      animation: gleamTravel 2.8s linear infinite;
     }
-
-    /* World: hit target follows the irregular front sheet and stacked layers. */
-    .hotspot-world {
-      left: 2.25%; top: 5.4%; width: 29.7%; height: 26.0%;
-      --pulse-color: #ff35e8;
-      --hit-shape: polygon(0 29%, 5% 15%, 12% 15%, 12% 4%, 19% 4%, 19% 0, 91% 0, 98% 8%, 98% 78%, 88% 87%, 54% 94%, 37% 100%, 0 91%);
+    @keyframes gleamTravel {
+      0% { stroke-dashoffset: 670; opacity: .22; }
+      35% { opacity: .96; }
+      100% { stroke-dashoffset: -670; opacity: .22; }
     }
-    /* Main pink diamond. */
-    .hotspot-home {
-      left: 32.2%; top: 11.8%; width: 36.0%; height: 28.8%;
-      --pulse-color: #ff0755;
-      --hit-shape: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
-    }
-    /* Cloud body. */
-    .hotspot-profile {
-      left: 69.1%; top: 4.1%; width: 30.1%; height: 28.2%;
-      --pulse-color: #9aff4a;
-      --hit-shape: polygon(20% 20%, 30% 7%, 43% 4%, 54% 0, 67% 4%, 80% 11%, 94% 21%, 99% 39%, 96% 59%, 88% 76%, 76% 88%, 59% 96%, 43% 95%, 29% 88%, 15% 83%, 5% 67%, 0 49%, 7% 32%);
-    }
-    /* The three thought dots are separate clickable parts of the same profile link. */
-    .hotspot-profile-trail {
-      left: 58.0%; top: 21.1%; width: 12.2%; height: 8.8%;
-      --pulse-color: #9aff4a;
-      --hit-shape: polygon(0 28%, 17% 0, 40% 13%, 56% 0, 83% 10%, 100% 31%, 93% 77%, 69% 100%, 39% 76%, 13% 100%);
-    }
-    /* Inverted orange triangle. */
-    .hotspot-merchant {
-      left: 2.1%; top: 36.7%; width: 32.2%; height: 25.0%;
-      --pulse-color: #ff9a00;
-      --hit-shape: polygon(0 0, 100% 0, 50% 100%);
-    }
-    /* Blue scroll: outer board, curled top-right, and vertical left roll. */
-    .hotspot-shop {
-      left: 69.3%; top: 35.0%; width: 28.6%; height: 27.0%;
-      --pulse-color: #00c8ff;
-      --hit-shape: polygon(9% 8%, 86% 8%, 91% 0, 99% 0, 100% 13%, 100% 85%, 94% 96%, 15% 96%, 9% 100%, 0 92%, 0 19%, 5% 8%);
-    }
-
-    /*
-       Strong active-button pulse:
-       the overlay uses SCREEN blending, so it brightens the original artwork
-       instead of darkening or hiding the baked-in Arabic label. The whole
-       clipped hotspot also casts a colored outer glow.
-    */
-    .hotspot.is-current {
-      background: rgba(255,255,255,.22);
-      mix-blend-mode: screen;
-      animation: activeButtonBlink 1s steps(1, end) infinite;
-      will-change: opacity, filter;
-    }
-
-    /* Keep the label in the reference artwork unobstructed. */
-    .hotspot.is-current::after {
-      opacity: 0;
-      animation: none;
-      background: transparent;
+    .center-oval {
+      fill: url(#homeRed);
+      stroke: #fff;
+      stroke-width: 7;
+      /* No oversized blue halo: the center oval meets the surrounding sectors. */
       filter: none;
     }
+    .center-label {
+      fill: #fff000;
+      font-family: "Cairo", Tahoma, sans-serif;
+      font-weight: 900;
+      font-size: 58px;
+      text-anchor: middle;
+      dominant-baseline: middle;
+      paint-order: stroke fill;
+      stroke: #fff000;
+      stroke-width: 1.6px;
+      filter: drop-shadow(0 2px 2px rgba(0,0,0,.58)) drop-shadow(0 0 5px rgba(255,240,0,.28));
+      pointer-events: none;
+      transition: stroke-width .24s ease, filter .22s ease;
+    }
 
-    @keyframes activeButtonBlink {
+    /* The selected page is slightly recessed; its lamp flashes clearly every 0.5s. */
+    .sector-link.is-current {
+      transform: translateZ(-8px) scale(.99);
+      filter: drop-shadow(0 8px 5px rgba(0,0,0,.34));
+    }
+    .sector-link.is-current:hover,
+    .sector-link.is-current.is-pointer-active {
+      transform: translateZ(-16px) scale(.98);
+    }
+    .sector-link.is-current .sector-fill,
+    .sector-link.is-current .center-oval {
+      stroke: #fff;
+      stroke-width: 5;
+      animation: currentSectorPulse 1s steps(1, end) infinite;
+    }
+    @keyframes currentSectorPulse {
       0%, 49.999% {
-        opacity: .94;
-        filter: brightness(1.24)
-                drop-shadow(0 0 18px var(--pulse-color))
-                drop-shadow(0 0 42px var(--pulse-color))
-                drop-shadow(0 0 72px var(--pulse-color));
+        filter: brightness(1.72) saturate(1.58)
+          drop-shadow(0 0 12px #fff)
+          drop-shadow(0 0 26px currentColor)
+          drop-shadow(0 0 42px currentColor);
       }
       50%, 100% {
-        opacity: .07;
-        filter: brightness(1)
-                drop-shadow(0 0 2px var(--pulse-color))
-                drop-shadow(0 0 6px var(--pulse-color));
+        filter: brightness(1.06) saturate(1.08)
+          drop-shadow(0 2px 3px rgba(0,0,0,.48));
       }
     }
-
-    .sr-only {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0,0,0,0);
-      white-space: nowrap;
-      border: 0;
+    .sector-link.is-current .sector-label,
+    .sector-link.is-current .center-label {
+      opacity: 1;
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,.75))
+        drop-shadow(0 0 5px currentColor);
     }
-
-    /* Account controls are kept outside the artwork so the reference remains exact. */
-    .community-area {
-      width: min(920px, calc(100% - 28px));
-      margin: 18px auto 0;
-      padding-bottom: 10px;
+    /* When another slice is under the pointer, only that slice flashes. */
+    .sector-link.is-current.is-suspended .sector-fill,
+    .sector-link.is-current.is-suspended .center-oval {
+      animation: none;
+      filter: brightness(1.02) saturate(1.04)
+        drop-shadow(0 2px 3px rgba(0,0,0,.48));
     }
-    .account-toolbar {
+    .sector-link.is-current.is-suspended {
+      filter: drop-shadow(0 8px 5px rgba(0,0,0,.34));
+    }
+    .sector-link.is-current.is-suspended .sector-label,
+    .sector-link.is-current.is-suspended .center-label {
+      filter: drop-shadow(0 1px 1px rgba(0,0,0,.72));
+    }
+    /* Pointer hover lights both the whole slice and its title; selected-page rules do not dim the text. */
+    .sector-link:hover .sector-label,
+    .sector-link.is-pointer-active .sector-label,
+    .sector-link:focus-visible .sector-label {
+      stroke: rgba(255,255,255,.96);
+      stroke-width: 2.7px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.95))
+        drop-shadow(0 0 11px currentColor)
+        drop-shadow(0 0 23px currentColor)
+        drop-shadow(0 0 31px rgba(255,255,255,.82));
+    }
+    .sector-link:hover .center-label,
+    .sector-link.is-pointer-active .center-label,
+    .sector-link:focus-visible .center-label {
+      stroke: rgba(255,255,255,.98);
+      stroke-width: 3.2px;
+      filter: drop-shadow(0 1px 2px rgba(0,0,0,.72))
+        drop-shadow(0 0 12px #fff000)
+        drop-shadow(0 0 25px #fff000)
+        drop-shadow(0 0 34px rgba(255,255,255,.9));
+    }
+    /* WELCOME + ORIGINAL GESSA MARK */
+    .welcome-brand {
+      width: min(100% - 28px, 1020px);
+      /* The SVG has a tiny bottom inset; compensate so the visible rim-to-welcome gap is 1 cm. */
+      margin: calc(1cm - clamp(1.5px, .4vw, 4.4px)) auto clamp(24px, 3vw, 40px);
+      text-align: center;
+      animation: welcomeReveal .95s ease-out both;
+    }
+    @keyframes welcomeReveal {
+      from { opacity: 0; transform: translateY(12px); filter: blur(7px); }
+      to { opacity: 1; transform: translateY(0); filter: blur(0); }
+    }
+    .welcome-title {
+      margin: 0;
+      color: #fff;
+      font-size: clamp(34px, 4.4vw, 62px);
+      line-height: 1.2;
+      font-weight: 900;
+      text-shadow: 0 3px 0 #071a3c, 0 7px 18px rgba(0,0,0,.55), 0 0 22px rgba(255,255,255,.22);
+    }
+    .brand-row {
       display: flex;
-      justify-content: flex-start;
-      margin: 0 0 12px;
+      direction: ltr;
+      align-items: center;
+      justify-content: center;
+      gap: clamp(2px, .45vw, 7px);
+      margin: 4px auto 0;
+      min-height: clamp(86px, 10vw, 132px);
     }
-    .logout {
-      border: 1px solid rgba(255,255,255,.32);
+    .brand-logo {
+      display: block;
+      width: clamp(88px, 10vw, 132px);
+      height: clamp(74px, 8vw, 110px);
+      object-fit: contain;
+      flex: 0 0 auto;
+      filter: drop-shadow(0 0 4px rgba(0,151,255,.22));
+    }
+    .brand-word {
+      color: #fff;
+      font-family: Arial, sans-serif;
+      font-weight: 900;
+      font-size: clamp(48px, 6.1vw, 80px);
+      letter-spacing: .045em;
+      line-height: 1;
+      text-shadow: 0 2px 0 #9ebee7, 0 5px 0 #233d68, 0 9px 18px #000b, 0 0 18px rgba(255,255,255,.55), 0 0 30px rgba(0,174,255,.45);
+      animation: wordGlimmer 2.6s ease-in-out infinite alternate;
+    }
+    @keyframes wordGlimmer {
+      from { filter: brightness(1) drop-shadow(0 0 5px rgba(255,255,255,.28)); }
+      to { filter: brightness(1.18) drop-shadow(0 0 12px rgba(255,255,255,.72)) drop-shadow(0 0 22px rgba(0,170,255,.48)); }
+    }
+
+
+    /* Side content widgets - positioned around the existing welcome without
+       changing the plate, welcome text, logo row, or their vertical spacing. */
+    .welcome-brand { position: relative; isolation: isolate; }
+    .welcome-side-pairs {
+      /* A wider absolute overlay gives room for three cards on each side.
+         It does not participate in layout, so the original welcome and logo
+         keep exactly the same size and position. */
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      right: auto;
+      width: min(calc(100vw - 28px), 1480px);
+      transform: translateX(-50%);
+      z-index: 8;
+      pointer-events: none;
+    }
+    .welcome-side-pair {
+      position: absolute; top: 50%; display: flex; align-items: stretch;
+      gap: 8px; width: max-content; transform: translateY(-50%);
+      pointer-events: none;
+    }
+    .welcome-side-pair--right { right: 0; direction: rtl; top: calc(50% + 27px); }
+    .welcome-side-pair--left { left: 0; direction: ltr; }
+
+    /* Search + original GESSA mark above the three right-side cards.
+       The whole row is exactly the same width as the three cards below it. */
+    .welcome-right-stack {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      width: 442px;
+      flex: 0 0 auto;
+    }
+    .welcome-search-brand-row {
+      display: flex;
+      direction: rtl;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      height: 46px;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      pointer-events: auto;
+    }
+    .welcome-search-logo {
+      display: grid;
+      place-items: center;
+      flex: 0 0 46px;
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      overflow: hidden;
+      background: #06245f;
+      box-shadow: 0 0 0 1px rgba(141,208,255,.45), 0 4px 12px rgba(0,0,0,.28), 0 0 14px rgba(0,164,255,.26);
+      pointer-events: auto;
+    }
+    .welcome-search-logo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .welcome-search-field {
+      display: flex;
+      align-items: center;
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 42px;
+      padding: 0 13px 0 7px;
+      border: 1px solid rgba(224,239,255,.92);
       border-radius: 999px;
-      padding: 7px 16px;
-      color: #f3f8ff;
-      background: linear-gradient(180deg, #174b91, #08285d);
-      box-shadow: 0 4px 0 #03183e, 0 8px 16px rgba(0,0,0,.28), inset 0 1px 2px rgba(255,255,255,.35);
+      background: linear-gradient(180deg, #f5f7fa, #e8edf3);
+      box-shadow: 0 3px 0 rgba(0,12,38,.28), 0 6px 15px rgba(0,0,0,.20), inset 0 1px 2px rgba(255,255,255,.98);
+      pointer-events: auto;
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .welcome-search-field:focus-within {
+      border-color: #75d9ff;
+      box-shadow: 0 0 0 3px rgba(49,177,255,.18), 0 0 20px rgba(0,165,255,.38), inset 0 1px 2px #fff;
+    }
+    .welcome-search-field input {
+      width: 100%;
+      min-width: 0;
+      height: 100%;
+      padding: 0 2px;
+      border: 0;
+      outline: 0;
+      color: #193b67;
+      background: transparent;
+      box-shadow: none;
+      font: 600 12px/1.2 "Cairo", Tahoma, sans-serif;
+      text-align: right;
+    }
+    .welcome-search-field input::placeholder { color: #758399; opacity: 1; }
+    .welcome-search-submit {
+      display: grid;
+      place-items: center;
+      flex: 0 0 30px;
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 0;
+      border-radius: 50%;
+      color: #66788e;
+      background: transparent;
+      cursor: pointer;
+      transition: color .16s ease, background .16s ease, transform .16s ease;
+    }
+    .welcome-search-submit svg { width: 19px; height: 19px; display: block; }
+    .welcome-search-submit:hover { color: #075cb8; background: rgba(35,150,232,.12); transform: scale(1.06); }
+    .welcome-right-widgets {
+      display: grid;
+      direction: rtl;
+      grid-template-columns: repeat(3, 142px);
+      gap: 8px;
+      width: 442px;
+    }
+    .welcome-right-widgets .welcome-widget { width: 142px; min-width: 142px; }
+    .gessa-search-results {
+      position: absolute;
+      top: 54px;
+      right: 0;
+      z-index: 90;
+      width: 100%;
+      max-height: 320px;
+      overflow: auto;
+      padding: 11px;
+      border: 1px solid rgba(119,190,255,.65);
+      border-radius: 17px;
+      color: #f5faff;
+      background: linear-gradient(150deg, rgba(12,43,91,.99), rgba(3,20,56,.99));
+      box-shadow: 0 16px 38px rgba(0,0,0,.48), 0 0 20px rgba(0,149,255,.2), inset 0 1px 0 rgba(255,255,255,.13);
+      backdrop-filter: blur(16px);
+      pointer-events: auto;
+    }
+    .gessa-search-results[hidden] { display: none !important; }
+    .gessa-search-status { padding: 10px; color: #d8eaff; text-align: center; font: 700 11px/1.7 "Cairo", Tahoma, sans-serif; }
+    .gessa-search-section + .gessa-search-section { margin-top: 9px; padding-top: 8px; border-top: 1px solid rgba(160,205,245,.22); }
+    .gessa-search-section h4 { margin: 0 0 6px; color: #83ddff; font: 900 11px "Cairo", Tahoma, sans-serif; }
+    .gessa-search-result {
+      display: block;
+      padding: 7px 9px;
+      border: 1px solid transparent;
+      border-radius: 9px;
+      color: #f4f8ff;
+      text-decoration: none;
+      font: 700 10px/1.55 "Cairo", Tahoma, sans-serif;
+      overflow-wrap: anywhere;
+    }
+    .gessa-search-result:hover { border-color: rgba(103,207,255,.5); background: rgba(35,126,211,.25); }
+    .gessa-search-result small { display: block; margin-top: 2px; color: #b8d3ed; font-size: 9px; font-weight: 500; }
+    .gessa-search-dismiss { display: block; width: 100%; margin-top: 7px; padding: 6px; border: 1px solid rgba(155,207,255,.3); border-radius: 9px; color: #dceeff; background: rgba(20,68,120,.65); font: 700 10px "Cairo", Tahoma, sans-serif; cursor: pointer; }
+    .welcome-widget {
+      width: clamp(116px, 13.4%, 142px); height: 168px; min-width: 0;
+      flex: 0 0 auto; display: flex; flex-direction: column; gap: 7px;
+      padding: 8px; overflow: hidden; pointer-events: auto;
+      border: 1px solid rgba(112,190,255,.52); border-radius: 16px;
+      color: #f5fbff;
+      background: linear-gradient(150deg, rgba(12,54,112,.84), rgba(3,26,72,.91));
+      box-shadow: 0 9px 24px rgba(0,0,0,.30), inset 0 1px 0 rgba(255,255,255,.16);
+      backdrop-filter: blur(7px);
+      transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease;
+    }
+    .welcome-widget:hover {
+      border-color: rgba(113,221,255,.9);
+      box-shadow: 0 10px 27px rgba(0,0,0,.34), 0 0 15px rgba(0,174,255,.22), inset 0 1px 0 rgba(255,255,255,.2);
+      transform: translateY(-2px);
+    }
+    .welcome-widget-head {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 4px; flex: 0 0 auto; min-height: 22px;
+      color: #fff; font: 900 11px/1.35 "Cairo", Tahoma, sans-serif;
+      white-space: nowrap;
+    }
+    .welcome-widget-head span:first-child { overflow: hidden; text-overflow: ellipsis; }
+    .welcome-widget-controls { display: flex; align-items: center; gap: 3px; flex: 0 0 auto; }
+    .welcome-widget-controls button {
+      display: grid; place-items: center; width: 20px; height: 20px; padding: 0;
+      border: 1px solid rgba(173,220,255,.55); border-radius: 50%;
+      color: #fff; background: linear-gradient(180deg, #1c5798, #09295e);
+      box-shadow: 0 2px 0 #031638, inset 0 1px 2px rgba(255,255,255,.28);
+      font: 900 14px/1 Arial, sans-serif; cursor: pointer;
+    }
+    .welcome-widget-controls button:hover { filter: brightness(1.25); }
+    .welcome-widget-icon {
+      display: grid; place-items: center; width: 19px; height: 19px;
+      flex: 0 0 19px; border-radius: 6px; color: #fff;
+      background: linear-gradient(145deg, #168bff, #0752ad);
+      box-shadow: 0 0 9px rgba(0,174,255,.55), inset 0 1px 2px rgba(255,255,255,.4);
+      font: 900 12px Arial, sans-serif;
+    }
+    .welcome-widget-track {
+      display: flex; align-items: stretch; direction: ltr; gap: 6px;
+      width: 100%; min-height: 0; flex: 1 1 auto;
+      overflow-x: auto; overflow-y: hidden; padding: 2px 1px 5px;
+      scrollbar-width: none; overscroll-behavior-x: contain; scroll-snap-type: x mandatory;
+    }
+    .welcome-widget-track::-webkit-scrollbar { display: none; }
+    .welcome-story-empty {
+      display: flex; flex: 1 0 100%; min-height: 0; flex-direction: column;
+      align-items: center; justify-content: center; gap: 7px; padding: 8px 5px;
+      border: 1px dashed rgba(142,204,255,.58); border-radius: 11px;
+      color: #eaf6ff; text-align: center;
+      background: linear-gradient(145deg, rgba(13,54,105,.64), rgba(4,24,65,.78));
+    }
+    .welcome-story-plus {
+      display: grid; place-items: center; width: 34px; height: 34px;
+      border: 3px solid #168bff; border-radius: 50%; color: #e4f8ff;
+      background: linear-gradient(145deg, #496d9b, #092657);
+      box-shadow: 0 0 0 2px rgba(255,255,255,.82), 0 0 12px rgba(0,145,255,.62);
+      font: 800 19px "Cairo", sans-serif;
+    }
+    .welcome-story-empty strong { font: 800 10px/1.45 "Cairo", Tahoma, sans-serif; }
+    .welcome-story-empty small { color: #b8d3ed; font: 500 9px/1.5 "Cairo", Tahoma, sans-serif; }
+    .welcome-video-preview {
+      position: relative; display: flex; flex: 1 1 auto; min-height: 0;
+      flex-direction: column; align-items: center; justify-content: center;
+      gap: 7px; padding: 9px 5px; overflow: hidden;
+      border: 1px solid rgba(112,205,255,.42); border-radius: 11px;
+      text-align: center;
+      background: radial-gradient(circle at 50% 18%, rgba(0,215,255,.22), transparent 45%),
+        linear-gradient(160deg, rgba(20,84,151,.78), rgba(3,20,58,.94));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.14);
+    }
+    .welcome-video-preview::before, .welcome-video-preview::after {
+      content: ""; position: absolute; width: 88px; height: 88px;
+      border: 1px solid rgba(91,213,255,.10); border-radius: 50%; pointer-events: none;
+    }
+    .welcome-video-preview::before { transform: scale(1.35); }
+    .welcome-video-preview::after { transform: scale(1.75); }
+    .welcome-video-play {
+      position: relative; z-index: 1; display: grid; place-items: center;
+      width: 36px; height: 36px; padding-left: 2px;
+      border: 1px solid rgba(255,255,255,.72); border-radius: 50%;
+      color: #fff; background: linear-gradient(145deg, #29c8ff, #0875d5);
+      box-shadow: 0 0 12px rgba(0,191,255,.55), 0 3px 0 #03427c, inset 0 1px 2px rgba(255,255,255,.62);
+      font: 900 14px Arial, sans-serif;
+    }
+    .welcome-video-preview strong { position: relative; z-index: 1; color: #fff; font: 800 10px/1.45 "Cairo", Tahoma, sans-serif; }
+    .welcome-video-preview small { position: relative; z-index: 1; color: #b8d3ed; font: 500 9px/1.45 "Cairo", Tahoma, sans-serif; }
+
+
+
+    /* GESSA quick actions: menu, messages and notifications above the left widgets. */
+    .gessa-tools-anchor {
+      position: absolute;
+      left: 0;
+      top: 0;
+      z-index: 40;
+      width: max-content;
+      max-width: calc(100vw - 28px);
+      pointer-events: auto;
+      direction: rtl;
+      text-align: right;
+    }
+    .welcome-side-pair--left { top: calc(50% + 54px); }
+    .gessa-tools {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 5px 7px;
+      border: 1px solid rgba(119,190,255,.26);
+      border-radius: 18px;
+      background: linear-gradient(145deg, rgba(6,35,83,.68), rgba(3,22,58,.72));
+      box-shadow: 0 7px 18px rgba(0,0,0,.24), inset 0 1px 0 rgba(255,255,255,.12);
+      backdrop-filter: blur(8px);
+    }
+    .gessa-tool-button {
+      position: relative;
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      padding: 0;
+      border: 1px solid rgba(203,228,255,.58);
+      border-radius: 50%;
+      color: #071a36;
+      background: linear-gradient(155deg, #ffffff 0%, #e7edf5 48%, #cbd7e5 100%);
+      box-shadow: 0 4px 0 rgba(2,14,39,.72), 0 7px 15px rgba(0,0,0,.28), inset 0 2px 3px rgba(255,255,255,.95);
+      cursor: pointer;
+      transition: transform .16s ease, background .16s ease, box-shadow .16s ease, color .16s ease;
+    }
+    .gessa-tool-button svg { width: 23px; height: 23px; display: block; }
+    .gessa-tool-button:hover,
+    .gessa-tool-button.is-open,
+    .gessa-tool-button:focus-visible {
+      color: #0753b9;
+      background: linear-gradient(155deg, #ffffff 0%, #d9efff 46%, #a9d9ff 100%);
+      border-color: #77d7ff;
+      box-shadow: 0 3px 0 #064b91, 0 0 0 3px rgba(54,170,255,.18), 0 0 20px rgba(0,166,255,.72), inset 0 2px 4px #fff;
+      transform: translateY(-1px);
+      outline: none;
+    }
+    .gessa-tool-button:active { transform: translateY(3px); box-shadow: 0 1px 0 #064b91, inset 0 2px 4px rgba(0,0,0,.16); }
+    .gessa-tool-badge {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      min-width: 19px;
+      height: 19px;
+      padding: 0 5px;
+      display: grid;
+      place-items: center;
+      border: 2px solid #f7fbff;
+      border-radius: 999px;
+      color: #fff;
+      background: #ed1b35;
+      box-shadow: 0 2px 7px rgba(0,0,0,.38);
+      font: 900 10px/1 Arial, sans-serif;
+    }
+    .gessa-tool-badge[hidden] { display: none; }
+    .gessa-tool-caption {
+      display: block;
+      margin-top: 5px;
+      color: #d9eaff;
+      text-align: center;
+      font: 800 10px/1.2 "Cairo", Tahoma, sans-serif;
+      text-shadow: 0 1px 4px #001334;
+    }
+    .gessa-tool-item { display: grid; justify-items: center; gap: 0; }
+    .gessa-popover {
+      position: absolute;
+      top: calc(100% + 12px);
+      left: 0;
+      z-index: 60;
+      width: min(650px, calc(100vw - 28px));
+      max-height: min(72vh, 560px);
+      overflow: auto;
+      padding: 12px;
+      border: 1px solid rgba(119,190,255,.62);
+      border-radius: 20px;
+      color: #f5faff;
+      background: linear-gradient(150deg, rgba(12,43,91,.98), rgba(3,20,56,.99));
+      box-shadow: 0 18px 48px rgba(0,0,0,.52), 0 0 24px rgba(0,149,255,.18), inset 0 1px 0 rgba(255,255,255,.15);
+      backdrop-filter: blur(18px);
+    }
+    .gessa-popover[hidden] { display: none !important; }
+    .gessa-popover-grid { display: grid; grid-template-columns: minmax(0,1.15fr) minmax(0,.85fr); gap: 10px; }
+    .gessa-menu-card {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid rgba(121,180,239,.34);
+      border-radius: 15px;
+      background: linear-gradient(145deg, rgba(19,62,119,.78), rgba(5,28,70,.88));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.08);
+    }
+    .gessa-menu-card h3,
+    .gessa-panel-heading {
+      margin: 0 0 10px;
+      color: #fff;
+      font: 900 16px/1.4 "Cairo", Tahoma, sans-serif;
+    }
+    .gessa-menu-list { display: grid; gap: 5px; }
+    .gessa-menu-link,
+    .gessa-create-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
+      padding: 7px 8px;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: #f4f8ff;
+      text-decoration: none;
+      font: 700 12px/1.45 "Cairo", Tahoma, sans-serif;
+      transition: background .15s ease, border-color .15s ease, transform .15s ease, box-shadow .15s ease;
+    }
+    .gessa-menu-link:hover,
+    .gessa-create-link:hover {
+      border-color: rgba(103,207,255,.6);
+      background: rgba(35,126,211,.28);
+      box-shadow: 0 0 13px rgba(0,174,255,.18);
+      transform: translateX(-2px);
+    }
+    .gessa-menu-icon {
+      display: grid;
+      place-items: center;
+      flex: 0 0 29px;
+      width: 29px;
+      height: 29px;
+      border: 1px solid rgba(186,225,255,.35);
+      border-radius: 9px;
+      color: #dff7ff;
+      background: linear-gradient(145deg, #1d72bd, #0a3978);
+      box-shadow: inset 0 1px 2px rgba(255,255,255,.24), 0 2px 5px rgba(0,0,0,.22);
+      font: 900 15px/1 Arial, sans-serif;
+    }
+    .gessa-menu-divider { height: 1px; margin: 7px 2px; background: rgba(166,207,246,.28); }
+    .gessa-popover-simple { width: min(360px, calc(100vw - 28px)); }
+    .gessa-popover-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 10px; }
+    .gessa-popover-top h3 { margin: 0; color: #fff; font: 900 17px "Cairo", Tahoma, sans-serif; }
+    .gessa-popover-close {
+      display: grid; place-items: center; width: 28px; height: 28px; padding: 0;
+      border: 1px solid rgba(183,221,255,.38); border-radius: 50%; color: #fff;
+      background: rgba(16,64,119,.85); font: 900 17px/1 Arial, sans-serif; cursor: pointer;
+    }
+    .gessa-popover-empty {
+      display: grid; justify-items: center; gap: 7px; padding: 23px 12px;
+      border: 1px dashed rgba(139,196,247,.4); border-radius: 13px;
+      color: #d9eaff; background: rgba(4,23,59,.48); text-align: center;
+      font: 700 12px/1.7 "Cairo", Tahoma, sans-serif;
+    }
+    .gessa-popover-empty-icon { font-size: 27px; color: #73d9ff; filter: drop-shadow(0 0 9px rgba(0,174,255,.65)); }
+    .gessa-popover-action {
+      display: block; margin-top: 10px; padding: 9px 12px; border-radius: 10px;
+      color: #041a38; background: linear-gradient(180deg, #83eaff, #22a9ed 58%, #0878ca);
+      box-shadow: 0 3px 0 #064b82, inset 0 1px 2px rgba(255,255,255,.7);
+      text-align: center; font: 900 12px "Cairo", Tahoma, sans-serif;
+    }
+    .gessa-create-section-label { margin: 9px 2px 5px; color: #8edcff; font: 900 10px "Cairo", Tahoma, sans-serif; }
+    @media (max-width: 1160px) {
+      .gessa-tools-anchor { position: relative; left: auto; top: auto; width: 100%; max-width: none; margin: 0 0 8px; order: 0; }
+      .gessa-tools { width: max-content; max-width: 100%; }
+      .gessa-popover { position: fixed; top: 76px; left: 12px; width: min(650px, calc(100vw - 24px)); max-height: calc(100vh - 100px); }
+      .gessa-popover-simple { width: min(360px, calc(100vw - 24px)); }
+    }
+    @media (max-width: 560px) {
+      .gessa-tool-button { width: 42px; height: 42px; }
+      .gessa-tools { gap: 8px; padding: 4px 6px; }
+      .gessa-popover-grid { grid-template-columns: 1fr; }
+      .gessa-menu-card { padding: 10px; }
+      .gessa-menu-list { grid-template-columns: 1fr 1fr; }
+      .gessa-menu-link { font-size: 11px; padding: 6px; }
+    }
+
+    /* On narrower screens, keep the central greeting/logo intact and place
+       the same-size cards in a horizontal strip below it. */
+    @media (max-width: 1160px) {
+      .welcome-side-pairs {
+        position: static; inset: auto; left: auto; right: auto; transform: none;
+        display: flex; gap: 8px;
+        width: 100%; margin: 12px auto 0; padding: 3px 2px 9px;
+        overflow-x: auto; overflow-y: hidden; scrollbar-width: thin;
+        scrollbar-color: rgba(83,178,255,.55) transparent;
+        pointer-events: auto; scroll-snap-type: x mandatory;
+      }
+      .welcome-side-pair {
+        position: static; top: auto; left: auto; right: auto;
+        display: contents; transform: none;
+      }
+      .welcome-widget { width: 142px; min-width: 142px; height: 168px; scroll-snap-align: start; }
+      .welcome-right-stack, .welcome-right-widgets { width: 442px; }
+      .gessa-search-results { position: fixed; top: 88px; left: 12px; right: 12px; width: auto; max-height: calc(100vh - 108px); }
+    }
+    @media (max-width: 380px) {
+      .welcome-widget { width: 132px; min-width: 132px; height: 160px; padding: 7px; }
+      .welcome-widget-head { font-size: 10px; }
+      .welcome-right-stack, .welcome-right-widgets { width: 412px; }
+      .welcome-right-widgets { grid-template-columns: repeat(3, 132px); }
+      .welcome-right-widgets .welcome-widget { width: 132px; min-width: 132px; height: 160px; }
+    }
+
+    /* THREE FULL-LENGTH CONTENT COLUMNS */
+    .home-columns {
+      width: min(1500px, calc(100% - 32px));
+      margin: 0 auto 48px;
+      display: grid;
+      direction: rtl;
+      grid-template-columns: minmax(220px, .86fr) minmax(430px, 1.8fr) minmax(220px, .86fr);
+      gap: 18px;
+      align-items: stretch;
+    }
+    .home-column {
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .column-panel {
+      background: linear-gradient(150deg, rgba(14,54,112,.96), rgba(5,29,76,.98));
+      border: 1px solid rgba(113,174,235,.48);
+      border-radius: 20px;
+      padding: 19px;
+      box-shadow: 0 12px 30px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.13);
+    }
+    .column-panel h2 {
+      margin: 0 0 14px;
+      font-size: 19px;
+      color: #fff;
+      font-weight: 900;
+    }
+    .profile-card {
+      background: linear-gradient(145deg, rgba(22,83,142,.94), rgba(5,35,85,.98));
+      border-color: rgba(56,189,248,.6);
+    }
+    .composer-owner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+    .composer-owner img {
+      width: 62px;
+      height: 62px;
+      border-radius: 17px;
+      object-fit: cover;
+      border: 2px solid #5dd7ff;
+      background: #071a32;
+      box-shadow: 0 0 14px rgba(56,189,248,.35);
+    }
+    .composer-owner a { color: #fff; font-weight: 900; overflow-wrap: anywhere; }
+    .profile-subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+    .side-links { display: grid; gap: 11px; }
+    .side-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 11px 12px;
+      border-radius: 13px;
+      color: #f8fbff;
+      font-weight: 800;
+      background: linear-gradient(180deg, #174b89, #0a2a65);
+      border: 1px solid rgba(155,207,255,.5);
+      box-shadow: 0 4px 0 #031638, 0 8px 14px rgba(0,0,0,.23), inset 0 1px 0 rgba(255,255,255,.25);
+      transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
+    }
+    .side-link:hover { transform: translateY(-2px); filter: brightness(1.16); }
+    .side-link:active { transform: translateY(3px); box-shadow: 0 1px 0 #031638; }
+    .side-link .link-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex: 0 0 auto;
+      background: var(--link-color, #38bdf8);
+      box-shadow: 0 0 8px var(--link-color, #38bdf8), 0 0 15px var(--link-color, #38bdf8);
+    }
+    /* Compact vertical shortcuts under the right-column community panel. */
+    .shortcut-links { margin-top: 15px; gap: 8px; }
+    .shortcut-links .side-link { min-height: 36px; padding: 8px 11px; font-size: 13px; }
+    .shortcut-links .side-link span:first-child { min-width: 0; }
+    .column-fill { flex: 1; min-height: 120px; }
+    .side-note {
+      color: #d2e5fa;
+      font-size: 13px;
+      line-height: 1.9;
+      margin: 0;
+    }
+    .account-toolbar { display: flex; justify-content: flex-start; margin-top: auto; }
+    .logout {
+      border: 1px solid rgba(255,255,255,.38);
+      border-radius: 999px;
+      padding: 9px 17px;
+      color: #fff;
+      background: linear-gradient(180deg, #e5484d, #a91e31);
+      box-shadow: 0 5px 0 #5e1421, 0 9px 16px rgba(0,0,0,.30), inset 0 1px 2px rgba(255,255,255,.45);
       font: 800 13px "Cairo", Tahoma, sans-serif;
       cursor: pointer;
       transition: transform .15s ease, filter .15s ease, box-shadow .15s ease;
     }
-    .logout:hover { transform: translateY(-2px); filter: brightness(1.16); }
-    .logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #03183e; }
-    .logout:disabled { opacity: .6; cursor: wait; }
+    .logout:hover { transform: translateY(-2px); filter: brightness(1.14); }
+    .logout:active { transform: translateY(3px); box-shadow: 0 1px 0 #5e1421; }
+    .logout:disabled { opacity: .65; cursor: wait; }
 
-    .panel {
-      background: linear-gradient(145deg, rgba(16,39,68,.97), rgba(8,27,57,.97));
-      border: 1px solid rgba(76,137,190,.48);
-      border-radius: 18px;
+    /* MAIN COMMUNITY COLUMN: preserve app.js hooks and IDs */
+    .main-column { min-width: 0; }
+    .community-panel {
+      background: linear-gradient(150deg, rgba(13,47,96,.98), rgba(5,27,70,.98));
+      border: 1px solid rgba(77,146,211,.58);
+      border-radius: 20px;
       padding: 20px;
-      margin-bottom: 18px;
-      box-shadow: 0 14px 40px rgba(0,0,0,.22), inset 0 1px 0 rgba(255,255,255,.04);
+      box-shadow: 0 14px 34px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.10);
     }
-    .panel h2 { margin: 0 0 14px; font-size: 19px; }
-    textarea {
-      display: block;
-      width: 100%;
-      min-height: 115px;
-      resize: vertical;
-      border: 1px solid var(--line);
-      border-radius: 12px;
-      background: #071a32;
-      color: var(--text);
-      padding: 14px;
-      font: inherit;
-      line-height: 1.7;
-      outline: none;
-    }
-    textarea:focus, input:focus {
-      border-color: var(--cyan);
-      box-shadow: 0 0 0 3px rgba(56,189,248,.12);
-    }
-    .form-actions {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 12px;
-      margin-top: 12px;
-    }
-    .hint { color: var(--muted); font-size: 12px; }
-    button.primary {
-      border: 0;
-      border-radius: 11px;
-      padding: 11px 22px;
-      color: #041426;
-      background: var(--cyan);
-      font: 800 15px "Cairo", Tahoma, sans-serif;
-      cursor: pointer;
-      box-shadow: 0 4px 0 #12638d, 0 7px 14px rgba(0,0,0,.25);
-      transition: transform .15s ease, box-shadow .15s ease;
-    }
-    button.primary:hover { transform: translateY(-2px); }
-    button.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #12638d; }
-    button.primary:disabled { opacity: .55; cursor: wait; }
+    .community-panel h2 { margin: 0 0 14px; font-size: 20px; color: #fff; }
     #homeMessage {
       padding: 12px 14px;
       margin: 0 0 16px;
-      border-radius: 11px;
-      background: rgba(56,189,248,.1);
-      border: 1px solid rgba(56,189,248,.35);
+      border-radius: 12px;
+      background: rgba(56,189,248,.13);
+      border: 1px solid rgba(56,189,248,.45);
       color: var(--text);
       line-height: 1.7;
     }
-    #homeMessage[data-type="error"] { background: rgba(251,113,133,.1); border-color: rgba(251,113,133,.45); }
-    #homeMessage[data-type="success"] { background: rgba(52,211,153,.1); border-color: rgba(52,211,153,.4); }
+    #homeMessage[data-type="error"] { background: rgba(251,113,133,.12); border-color: rgba(251,113,133,.58); }
+    #homeMessage[data-type="success"] { background: rgba(52,211,153,.12); border-color: rgba(52,211,153,.5); }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 132px;
+      resize: vertical;
+      border: 1px solid #4775a8;
+      border-radius: 14px;
+      background: #041a46;
+      color: var(--text);
+      padding: 14px;
+      font: 600 15px "Cairo", Tahoma, sans-serif;
+      line-height: 1.8;
+      outline: none;
+    }
+    textarea:focus, input:focus { border-color: var(--cyan); box-shadow: 0 0 0 3px rgba(56,189,248,.15); }
+    .form-actions { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 12px; }
+    .hint { color: var(--muted); font-size: 12px; }
+    button.primary {
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 12px;
+      padding: 11px 24px;
+      color: #041426;
+      background: linear-gradient(180deg, #73e5ff, #20a9f0 55%, #087ed0);
+      font: 900 15px "Cairo", Tahoma, sans-serif;
+      cursor: pointer;
+      box-shadow: 0 5px 0 #07518d, 0 9px 17px rgba(0,0,0,.3), inset 0 1px 2px rgba(255,255,255,.7);
+      transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+    }
+    button.primary:hover { transform: translateY(-2px); filter: brightness(1.1); }
+    button.primary:active { transform: translateY(3px); box-shadow: 0 1px 0 #07518d; }
+    button.primary:disabled { opacity: .55; cursor: wait; }
     #feed { display: grid; gap: 14px; }
-    .empty-state { color: var(--muted); text-align: center; padding: 24px 10px; line-height: 1.8; }
-    .post-card { background: rgba(16,39,68,.82); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+    .empty-state { color: var(--muted); text-align: center; padding: 24px 10px; line-height: 1.9; }
+    .post-card { background: linear-gradient(145deg, rgba(17,54,102,.92), rgba(7,30,73,.96)); border: 1px solid #2c5c91; border-radius: 16px; padding: 18px; }
     .post-head { display: flex; justify-content: space-between; gap: 12px; align-items: center; margin-bottom: 12px; }
-    .post-head strong { color: var(--cyan); }
+    .post-head strong { color: #73dcff; }
     .post-author { display: inline-flex !important; align-items: center; gap: 10px; margin: 0 !important; color: var(--text) !important; text-decoration: none; }
     .post-author span { display: grid; gap: 2px; }
     .post-author small { color: var(--muted); font-size: 11px; }
     .post-avatar { width: 46px; height: 46px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cyan); background: #0a1d38; display: grid; place-items: center; }
     .post-avatar-fallback { color: var(--cyan); font-weight: 900; font-size: 19px; }
     .post-card[data-profile-id] { cursor: pointer; }
-    .post-card[data-profile-id]:hover { border-color: var(--cyan); box-shadow: 0 10px 28px #0004; }
-    .composer-owner { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-    .composer-owner img { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; border: 2px solid var(--cyan); }
-    .composer-owner a { color: var(--cyan); font-weight: 800; }
+    .post-card[data-profile-id]:hover { border-color: var(--cyan); box-shadow: 0 10px 28px #0005; }
     .post-head time { color: var(--muted); font-size: 12px; }
     .post-content { white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.9; margin: 0; }
-    .post-card a { display: inline-block; margin-top: 12px; color: var(--cyan); }
+    .post-card a { display: inline-block; margin-top: 12px; color: #65d9ff; }
     .post-actions { display: flex; justify-content: flex-end; margin-top: 12px; }
-    .delete-post { border: 1px solid rgba(229,72,77,.45); background: transparent; color: #ffb4b7; padding: 7px 13px; border-radius: 9px; cursor: pointer; }
-    .site-footer { color: var(--muted); text-align: center; padding: 22px 16px 30px; font-size: 12px; }
+    .delete-post { border: 1px solid rgba(229,72,77,.6); background: rgba(130,20,36,.22); color: #ffb4b7; padding: 7px 13px; border-radius: 9px; cursor: pointer; }
+    .site-footer { color: #a8c3e5; text-align: center; padding: 22px 16px 30px; font-size: 12px; }
 
-    @media (max-width: 600px) {
-      .community-area { width: calc(100% - 20px); margin-top: 14px; }
-      .panel { padding: 15px; }
-      .form-actions { align-items: flex-start; flex-direction: column; }
+    @media (max-width: 1050px) {
+      .home-columns {
+        grid-template-columns: minmax(190px, .8fr) minmax(360px, 1.7fr) minmax(190px, .8fr);
+        gap: 12px;
+      }
+      .column-panel, .community-panel { padding: 15px; }
+    }
+    @media (max-width: 820px) {
+      .home-columns { grid-template-columns: 1fr 1fr; }
+      .main-column { grid-column: 1 / -1; grid-row: 1; }
+      .right-column { grid-column: 2; grid-row: 2; }
+      .left-column { grid-column: 1; grid-row: 2; }
+    }
+    @media (max-width: 560px) {
+      .plate-viewport { padding: 1cm 4px 0; }
+      .plate-stage { width: 100%; aspect-ratio: 1130 / 465; }
+      .plate-svg { overflow: visible; }
+      .home-columns { width: calc(100% - 18px); grid-template-columns: 1fr; gap: 12px; }
+      .main-column, .right-column, .left-column { grid-column: 1; grid-row: auto; }
+      .welcome-brand { margin-top: calc(1cm - clamp(1.5px, .4vw, 4.4px)); margin-bottom: 20px; }
+      .welcome-title { font-size: clamp(29px, 8vw, 42px); }
+      .brand-row { min-height: 76px; gap: 6px; }
+      .brand-logo { width: 82px; height: 70px; }
+      .brand-word { font-size: clamp(40px, 11vw, 54px); }
+      .community-panel { padding: 15px; }
+      .form-actions { align-items: stretch; flex-direction: column; }
       button.primary { width: 100%; }
       .post-head { align-items: flex-start; }
-      .logout { padding: 6px 13px; font-size: 12px; }
+      .column-fill { min-height: 0; }
     }
-
     @media (prefers-reduced-motion: reduce) {
-      .hero-art { animation: none; }
-      .hotspot, .logout, button.primary { transition: none !important; }
-      .hotspot.is-current {
-        animation: none;
-        opacity: .58;
-        background: rgba(255,255,255,.22);
-        mix-blend-mode: screen;
-        filter: brightness(1.18)
-                drop-shadow(0 0 16px var(--pulse-color))
-                drop-shadow(0 0 36px var(--pulse-color))
-                drop-shadow(0 0 60px var(--pulse-color));
-      }
-      .hotspot.is-current::after { animation: none; opacity: 0; }
+      .welcome-brand, .brand-word { animation: none !important; }
     }
   </style>
 </head>
 <body>
 
-  <section class="hero-frame" id="homeTop" aria-label="الأقسام الرئيسية في GESSA">
-    <img class="hero-art" src="gessa-home-reference.png" alt="واجهة GESSA الرئيسية" width="1096" height="678" draggable="false">
+  <!-- ROTATING ELLIPTICAL DISH: six clickable sections -->
+  <section class="plate-viewport" aria-label="أقسام GESSA الرئيسية">
+    <div class="plate-stage" id="gessaPlate">
+      <svg class="plate-svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 8 1130 465" preserveAspectRatio="xMidYMid meet" role="group" aria-label="طبق أقسام GESSA الدوار">
+        <defs>
+          <linearGradient id="dishBase" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#0b3b83"/>
+            <stop offset=".48" stop-color="#06245f"/>
+            <stop offset="1" stop-color="#03143b"/>
+          </linearGradient>
+          <linearGradient id="gamesFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ff8be9"/>
+            <stop offset=".28" stop-color="#ff54d7"/>
+            <stop offset=".68" stop-color="#e72ac6"/>
+            <stop offset="1" stop-color="#9b22cf"/>
+          </linearGradient>
+          <linearGradient id="worldFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#ffd05a"/>
+            <stop offset=".30" stop-color="#ff9a00"/>
+            <stop offset=".72" stop-color="#ff7900"/>
+            <stop offset="1" stop-color="#d84b00"/>
+          </linearGradient>
+          <linearGradient id="profileFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#d4ff8b"/>
+            <stop offset=".35" stop-color="#9dff4d"/>
+            <stop offset=".75" stop-color="#6fe83a"/>
+            <stop offset="1" stop-color="#3aaf33"/>
+          </linearGradient>
+          <linearGradient id="shopFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#9bf5ff"/>
+            <stop offset=".32" stop-color="#29d6ff"/>
+            <stop offset=".72" stop-color="#00aef4"/>
+            <stop offset="1" stop-color="#0874d2"/>
+          </linearGradient>
+          <linearGradient id="merchantFill" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#fff9a0"/>
+            <stop offset=".32" stop-color="#ffe900"/>
+            <stop offset=".76" stop-color="#ffc400"/>
+            <stop offset="1" stop-color="#e88a00"/>
+          </linearGradient>
+          <linearGradient id="homeRed" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ff4b4b"/>
+            <stop offset=".42" stop-color="#ff1010"/>
+            <stop offset="1" stop-color="#d90000"/>
+          </linearGradient>
+          <linearGradient id="edgeShine" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".94"/>
+            <stop offset=".42" stop-color="#9ed9ff" stop-opacity=".30"/>
+            <stop offset="1" stop-color="#061b4c" stop-opacity=".86"/>
+          </linearGradient>
+          <linearGradient id="plateShine" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset=".22" stop-color="#ffffff" stop-opacity=".72"/>
+            <stop offset=".5" stop-color="#ffffff" stop-opacity="1"/>
+            <stop offset=".78" stop-color="#9ff5ff" stop-opacity=".68"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+          </linearGradient>
+          <linearGradient id="dishSurfaceSweep" gradientUnits="userSpaceOnUse" x1="-250" y1="15" x2="250" y2="440">
+            <stop offset="0" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset=".38" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset=".48" stop-color="#ffffff" stop-opacity=".19"/>
+            <stop offset=".53" stop-color="#bafaff" stop-opacity=".26"/>
+            <stop offset=".59" stop-color="#ffffff" stop-opacity=".10"/>
+            <stop offset=".70" stop-color="#ffffff" stop-opacity="0"/>
+            <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+            <animateTransform attributeName="gradientTransform" type="translate" from="-850 0" to="1500 0" dur="3.4s" repeatCount="indefinite"/>
+          </linearGradient>
+          <!-- Hard clipping edge: the red rim can touch the platter edge but never paint outside it. -->
+          <clipPath id="dishOuterEdgeClip" clipPathUnits="userSpaceOnUse">
+            <ellipse cx="565" cy="240" rx="542.5" ry="231.5"/>
+          </clipPath>
+          <filter id="dishShadow" x="-15%" y="-20%" width="130%" height="150%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="9" result="blur"/>
+            <feOffset dy="13" result="offset"/>
+            <feComponentTransfer><feFuncA type="linear" slope=".48"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="homeDepth" x="-20%" y="-30%" width="140%" height="165%">
+            <feGaussianBlur in="SourceAlpha" stdDeviation="7" result="b"/>
+            <feOffset dy="7" result="o"/>
+            <feComponentTransfer><feFuncA type="linear" slope=".6"/></feComponentTransfer>
+            <feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="activeGlow" x="-60%" y="-60%" width="220%" height="220%">
+            <feGaussianBlur stdDeviation="5" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+          <filter id="rimSoftGlow" x="-30%" y="-30%" width="160%" height="160%">
+            <feGaussianBlur stdDeviation="4"/>
+          </filter>
+          <!-- Curved baselines run parallel to the outer rim, but stay safely inside each sector. -->
+          <path id="gamesTextCurve" d="M 205 128 Q 360 73 515 119"/>
+          <path id="worldTextCurve" d="M 545 63 C 660 34 800 47 910 105"/>
+          <path id="profileTextCurve" d="M 815 145 C 900 164 988 211 1001 258 C 1014 305 974 350 895 377"/>
+          <path id="shopTextCurve" d="M 535 356 C 635 405 770 408 875 374"/>
+          <path id="merchantTextCurve" d="M 105 258 C 178 310 257 340 350 356"/>
+        </defs>
 
-    <a class="hotspot hotspot-world" href="world.html" aria-label="العالم الافتراضي" title="العالم الافتراضي"><span class="sr-only">العالم الافتراضي</span></a>
-    <a class="hotspot hotspot-home" href="home.html" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية"><span class="sr-only">الصفحة الرئيسية</span></a>
-    <a class="hotspot hotspot-profile" href="profile.html" aria-label="ملفي الشخصي" title="ملفي الشخصي"><span class="sr-only">ملفي الشخصي</span></a>
-    <a class="hotspot hotspot-profile-trail" href="profile.html" aria-label="فتح الملف الشخصي" title="ملفي الشخصي"><span class="sr-only">امتداد زر الملف الشخصي</span></a>
-    <a class="hotspot hotspot-merchant" href="merchant.html" aria-label="التجار" title="التجار"><span class="sr-only">التجار</span></a>
-    <a class="hotspot hotspot-shop" href="shop.html" aria-label="التسوق" title="التسوق"><span class="sr-only">التسوق</span></a>
+        <g class="plate-positioner">
+          <!--
+            Tanoura-style spin:
+            1) stretch the drawn oval into a round face,
+            2) rotate that round face around its own vertical/centre axis,
+            3) project it back to the same fixed oval shape.
+            The outer plate therefore stays oval and front-facing; only the
+            coloured sectors, dividers and labels revolve around the centre.
+          -->
+          <g class="plate-squash">
+            <g class="plate-rotor" filter="url(#dishShadow)">
+              <g class="plate-round-face">
+          <ellipse cx="565" cy="245" rx="535" ry="224" fill="#020f31" opacity=".58" transform="translate(0 13)"/>
+          <ellipse cx="565" cy="240" rx="535" ry="224" fill="url(#dishBase)" stroke="url(#edgeShine)" stroke-width="15"/>
+
+          <!-- GAMES: upper-left pink sector -->
+          <a class="sector-link sector-games" href="games.html" aria-label="الألعاب" title="الألعاب" style="color:#ff5bdc">
+            <path class="sector-fill" fill="url(#gamesFill)" d="M 90 142 C 180 67 330 18 520 20 L 530 178 C 485 180 444 196 410 220 L 90 142 Z"/>
+            <g class="counter-label">
+              <text class="sector-label" fill="#6b159e" stroke="#6b159e" font-size="50"><textPath href="#gamesTextCurve" startOffset="50%" text-anchor="middle" textLength="205" lengthAdjust="spacingAndGlyphs">الألعاب</textPath></text>
+            </g>
+          </a>
+
+          <!-- VIRTUAL WORLD: upper-right orange sector -->
+          <a class="sector-link sector-world" href="world.html" aria-label="العالم الافتراضي" title="العالم الافتراضي" style="color:#ff8700">
+            <path class="sector-fill" fill="url(#worldFill)" d="M 520 20 C 680 10 850 25 940 82 L 740 220 C 700 192 620 178 530 178 Z"/>
+            <g class="counter-label">
+              <text class="sector-label world-sector-label" fill="#39ed27" stroke="#39ed27" font-size="42"><textPath href="#worldTextCurve" startOffset="50%" text-anchor="middle" textLength="285" lengthAdjust="spacingAndGlyphs">العالم الافتراضي</textPath></text>
+            </g>
+          </a>
+
+          <!-- PROFILE: right green sector -->
+          <a class="sector-link sector-profile" href="profile.html" aria-label="ملفي الشخصي" title="ملفي الشخصي" style="color:#9cff45">
+            <path class="sector-fill" fill="url(#profileFill)" d="M 940 82 C 1045 126 1120 207 1098 294 C 1088 345 1026 400 950 425 L 740 260 C 760 247 760 233 740 220 Z"/>
+            <g class="counter-label">
+              <text class="sector-label profile-sector-label" fill="#006dff" stroke="#006dff" font-size="48"><textPath href="#profileTextCurve" xlink:href="#profileTextCurve" startOffset="50%" text-anchor="middle" textLength="258" lengthAdjust="spacingAndGlyphs">ملفي الشخصي</textPath></text>
+            </g>
+          </a>
+
+          <!-- SHOPPING: lower-right cyan sector -->
+          <a class="sector-link sector-shop" href="shop.html" aria-label="التسوق" title="التسوق" style="color:#13d7ff">
+            <path class="sector-fill" fill="url(#shopFill)" d="M 950 425 C 835 475 690 478 380 425 L 410 260 C 455 290 505 302 565 302 C 625 302 675 290 720 260 Z"/>
+            <g class="counter-label">
+              <text class="sector-label shop-sector-label" fill="#ffffff" stroke="#ffffff" font-size="65"><textPath href="#shopTextCurve" startOffset="50%" text-anchor="middle" textLength="220" lengthAdjust="spacingAndGlyphs">التسوق</textPath></text>
+            </g>
+          </a>
+
+          <!-- MERCHANTS: lower-left yellow sector -->
+          <a class="sector-link sector-merchant" href="merchant.html" aria-label="التجار" title="التجار" style="color:#ffe500">
+            <path class="sector-fill" fill="url(#merchantFill)" d="M 380 425 C 205 390 65 310 32 244 C 20 205 50 164 90 142 L 410 220 C 390 232 390 248 410 260 L 380 425 Z"/>
+            <g class="counter-label">
+              <text class="sector-label merchant-sector-label" fill="#006dff" stroke="#006dff" font-size="64"><textPath href="#merchantTextCurve" startOffset="50%" text-anchor="middle" textLength="218" lengthAdjust="spacingAndGlyphs">التجار</textPath></text>
+            </g>
+          </a>
+
+          <!-- RECESSED COLORED DIVIDER GROOVES; THEY END AT THE CENTER OVAL -->
+          <path class="separator-bed" d="M 90 142 L 410 220"/>
+          <path class="separator-bed" d="M 520 20 L 530 178"/>
+          <path class="separator-bed" d="M 940 82 L 740 220"/>
+          <path class="separator-bed" d="M 720 260 L 950 425"/>
+          <path class="separator-bed" d="M 410 260 L 380 425"/>
+          <path class="separator" stroke="#2167ff" d="M 90 142 L 410 220"/>
+          <path class="separator" stroke="#22b94c" d="M 520 20 L 530 178"/>
+          <path class="separator" stroke="#f51d24" d="M 940 82 L 740 220"/>
+          <path class="separator" stroke="#fff000" d="M 720 260 L 950 425"/>
+          <path class="separator" stroke="#a52cff" d="M 410 260 L 380 425"/>
+
+
+          <!-- CENTER HOME OVAL -->
+          <a class="sector-link sector-home is-current" href="home.html" aria-label="الصفحة الرئيسية" title="الصفحة الرئيسية" style="color:#ff2020">
+            <ellipse class="center-oval" cx="565" cy="240" rx="202" ry="88"/>
+            <g class="counter-label">
+              <text class="center-label" x="565" y="244" textLength="350" lengthAdjust="spacingAndGlyphs">الصفحة الرئيسية</text>
+            </g>
+          </a>
+
+          <!-- Red edge glow is clipped to the dish silhouette; crisp rim sits directly on the edge. -->
+          <ellipse class="outer-rim-glow" cx="565" cy="240" rx="539.5" ry="228.5"/>
+          <ellipse class="outer-rim" cx="565" cy="240" rx="539.5" ry="228.5"/>
+          <ellipse cx="565" cy="240" rx="526" ry="215" fill="none" stroke="rgba(255,255,255,.34)" stroke-width="2.6" pointer-events="none"/>
+          <!-- A broad moving reflection sweeps over every colored section of the whole platter. -->
+          <ellipse class="plate-surface-sweep" cx="565" cy="240" rx="542.5" ry="231.5"/>
+          <!-- Gloss streaks and animated light sparks on the platter and button faces. -->
+          <path class="plate-glint-line" d="M 104 133 C 270 38 446 18 560 22"/>
+          <path class="plate-glint-line" d="M 725 27 C 860 34 1000 91 1062 166" opacity=".72"/>
+          <path class="plate-glint-line" d="M 48 286 C 130 367 255 418 365 421" opacity=".72"/>
+          <path class="plate-glint-line" d="M 745 438 C 850 445 960 386 1070 286" opacity=".70"/>
+          <g aria-hidden="true">
+            <path class="plate-sparkle" d="M 0 -12 L 3 -3 L 12 0 L 3 3 L 0 12 L -3 3 L -12 0 L -3 -3 Z" transform="translate(185 86)"/>
+            <path class="plate-sparkle" d="M 0 -10 L 2.5 -2.5 L 10 0 L 2.5 2.5 L 0 10 L -2.5 2.5 L -10 0 L -2.5 -2.5 Z" transform="translate(850 74)"/>
+            <path class="plate-sparkle" d="M 0 -13 L 3 -3 L 13 0 L 3 3 L 0 13 L -3 3 L -13 0 L -3 -3 Z" transform="translate(1030 250)"/>
+            <path class="plate-sparkle" d="M 0 -11 L 2.5 -2.5 L 11 0 L 2.5 2.5 L 0 11 L -2.5 2.5 L -11 0 L -2.5 -2.5 Z" transform="translate(775 400)"/>
+            <path class="plate-sparkle" d="M 0 -10 L 2.5 -2.5 L 10 0 L 2.5 2.5 L 0 10 L -2.5 2.5 L -10 0 L -2.5 -2.5 Z" transform="translate(128 310)"/>
+            <path class="plate-sparkle" d="M 0 -8 L 2 -2 L 8 0 L 2 2 L 0 8 L -2 2 L -8 0 L -2 -2 Z" transform="translate(725 204)"/>
+            <path class="plate-sparkle" d="M 0 -9 L 2 -2 L 9 0 L 2 2 L 0 9 L -2 2 L -9 0 L -2 -2 Z" transform="translate(370 115)"/>
+            <path class="plate-sparkle" d="M 0 -9 L 2 -2 L 9 0 L 2 2 L 0 9 L -2 2 L -9 0 L -2 -2 Z" transform="translate(565 92)"/>
+            <path class="plate-sparkle" d="M 0 -9 L 2 -2 L 9 0 L 2 2 L 0 9 L -2 2 L -9 0 L -2 -2 Z" transform="translate(965 180)"/>
+            <path class="plate-sparkle" d="M 0 -8 L 2 -2 L 8 0 L 2 2 L 0 8 L -2 2 L -8 0 L -2 -2 Z" transform="translate(520 390)"/>
+            <path class="plate-sparkle" d="M 0 -8 L 2 -2 L 8 0 L 2 2 L 0 8 L -2 2 L -8 0 L -2 -2 Z" transform="translate(260 365)"/>
+          </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
   </section>
 
-  <!-- A real header remains on the page so config.js does not inject another nav. -->
-  <main class="community-area">
-    <header class="account-toolbar">
-      <button class="logout" id="logoutButton" type="button">تسجيل الخروج</button>
-    </header>
+  <!-- WELCOME LINE AND BRAND MARK -->
+  <section class="welcome-brand" aria-label="مرحبًا بك في GESSA">
+    <h1 class="welcome-title">مرحبًا بك في</h1>
+    <div class="brand-row">
+      <img class="brand-logo" src="gessa-home-logo.png" alt="شعار GESSA الأصلي" width="132" height="106">
+      <span class="brand-word">GESSA</span>
+    </div>
+    <div class="welcome-side-pairs" aria-label="محتوى مجتمع GESSA">
 
-    <div id="homeMessage" role="status" aria-live="polite" hidden></div>
-
-    <section class="panel" aria-labelledby="composerTitle">
-      <h2 id="composerTitle">شارك مجتمع GESSA</h2>
-      <div class="composer-owner">
-        <a id="composerProfileLink" href="profile.html"><img id="composerAvatar" src="gessa-icon.png" alt="ملفي الشخصي"></a>
-        <a id="composerName" href="profile.html">ملفي الشخصي</a>
-      </div>
-      <form id="pf">
-        <textarea id="pb" name="body" maxlength="5000" placeholder="ماذا تريد أن تشارك اليوم؟" required></textarea>
-        <div class="form-actions">
-          <span class="hint">اكتب مشاركتك ثم اضغط نشر.</span>
-          <button class="primary" type="submit">نشر</button>
+      <!-- Quick actions above the left-side stories/reels/articles. -->
+      <div class="gessa-tools-anchor" aria-label="قائمة GESSA والرسائل والإشعارات">
+        <div class="gessa-tools" role="toolbar" aria-label="أدوات GESSA السريعة">
+          <div class="gessa-tool-item">
+            <button class="gessa-tool-button" id="gessaMenuButton" type="button" aria-label="قائمة GESSA والإنشاء" aria-expanded="false" aria-controls="gessaMenuPopover" title="القائمة">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="9.5" y="3" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="16" y="3" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="3" y="9.5" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="9.5" y="9.5" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="16" y="9.5" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="3" y="16" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="9.5" y="16" width="5" height="5" rx="1.2" fill="currentColor"/><rect x="16" y="16" width="5" height="5" rx="1.2" fill="currentColor"/></svg>
+            </button>
+            <span class="gessa-tool-caption">القائمة</span>
+          </div>
+          <div class="gessa-tool-item">
+            <button class="gessa-tool-button" id="gessaMessagesButton" type="button" aria-label="الرسائل" aria-expanded="false" aria-controls="gessaMessagesPopover" title="الرسائل">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4.2 4.5A3.2 3.2 0 0 1 7.4 1.3h9.2a3.2 3.2 0 0 1 3.2 3.2v8.1a3.2 3.2 0 0 1-3.2 3.2h-4.2l-4.9 4.1c-.7.6-1.7.1-1.7-.8v-3.3a3.2 3.2 0 0 1-1.6-2.8z"/><path d="M8 8h8M8 11.5h5" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round"/></svg>
+              <span class="gessa-tool-badge" id="gessaMessagesBadge" hidden>0</span>
+            </button>
+            <span class="gessa-tool-caption">الرسائل</span>
+          </div>
+          <div class="gessa-tool-item">
+            <button class="gessa-tool-button" id="gessaNotificationsButton" type="button" aria-label="الإشعارات" aria-expanded="false" aria-controls="gessaNotificationsPopover" title="الإشعارات">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M18.2 9.8a6.2 6.2 0 0 0-12.4 0c0 7-2.6 7.2-2.6 8.7 0 .6.5 1 1.1 1h15.4c.6 0 1.1-.4 1.1-1 0-1.5-2.6-1.7-2.6-8.7Z"/><path d="M9.2 21h5.6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+              <span class="gessa-tool-badge" id="gessaNotificationsBadge" hidden>0</span>
+            </button>
+            <span class="gessa-tool-caption">الإشعارات</span>
+          </div>
         </div>
-      </form>
+
+        <!-- Menu contains GESSA's own directory alongside the Facebook-style Create list. -->
+        <div class="gessa-popover" id="gessaMenuPopover" role="dialog" aria-label="قائمة GESSA والإنشاء" hidden>
+          <div class="gessa-popover-grid">
+            <section class="gessa-menu-card">
+              <h3>قائمة GESSA</h3>
+              <nav class="gessa-menu-list" aria-label="أقسام GESSA">
+                <a class="gessa-menu-link" href="home.html"><span class="gessa-menu-icon">⌂</span>الرئيسية</a>
+                <a class="gessa-menu-link" href="profile.html"><span class="gessa-menu-icon">◉</span>ملفي الشخصي</a>
+                <a class="gessa-menu-link" href="friends.html"><span class="gessa-menu-icon">♙</span>الأصدقاء</a>
+                <a class="gessa-menu-link" href="groups.html"><span class="gessa-menu-icon">♧</span>المجموعات</a>
+                <a class="gessa-menu-link" href="world.html"><span class="gessa-menu-icon">◎</span>العالم الافتراضي</a>
+                <a class="gessa-menu-link" href="shop.html"><span class="gessa-menu-icon">▣</span>التسوق</a>
+                <a class="gessa-menu-link" href="merchant.html"><span class="gessa-menu-icon">▤</span>التجار</a>
+                <a class="gessa-menu-link" href="games.html"><span class="gessa-menu-icon">✦</span>الألعاب</a>
+                <a class="gessa-menu-link" href="reels.html"><span class="gessa-menu-icon">▶</span>الريلز</a>
+                <a class="gessa-menu-link" href="trends.html"><span class="gessa-menu-icon">↗</span>الترندز</a>
+                <a class="gessa-menu-link" href="messenger.html"><span class="gessa-menu-icon">✉</span>Messenger</a>
+                <a class="gessa-menu-link" href="news.html"><span class="gessa-menu-icon">▥</span>الأخبار</a>
+                <a class="gessa-menu-link" href="pages.html"><span class="gessa-menu-icon">▣</span>الصفحات</a>
+                <a class="gessa-menu-link" href="articles.html"><span class="gessa-menu-icon">✎</span>المقالات</a>
+                <a class="gessa-menu-link" href="creator-dashboard.html"><span class="gessa-menu-icon">◈</span>منشئ المحتوى</a>
+                <a class="gessa-menu-link" href="ads-manager.html"><span class="gessa-menu-icon">◉</span>مدير الإعلانات</a>
+                <a class="gessa-menu-link" href="support.html"><span class="gessa-menu-icon">?</span>الدعم</a>
+              </nav>
+            </section>
+            <section class="gessa-menu-card">
+              <h3>إنشاء</h3>
+              <div class="gessa-menu-list">
+                <a class="gessa-create-link" href="#pb" data-focus-composer><span class="gessa-menu-icon">✎</span>منشور</a>
+                <a class="gessa-create-link" href="story-create.html"><span class="gessa-menu-icon">▣</span>قصة</a>
+                <a class="gessa-create-link" href="reels.html?create=1"><span class="gessa-menu-icon">▶</span>ريلز</a>
+                <a class="gessa-create-link" href="events.html?create=personal"><span class="gessa-menu-icon">★</span>حدث شخصي</a>
+                <a class="gessa-create-link" href="notes.html?create=1"><span class="gessa-menu-icon">▤</span>ملاحظة</a>
+                <div class="gessa-menu-divider"></div>
+                <div class="gessa-create-section-label">صفحات وأعمال</div>
+                <a class="gessa-create-link" href="pages.html?create=1"><span class="gessa-menu-icon">⚑</span>صفحة</a>
+                <a class="gessa-create-link" href="ads-manager.html?create=1"><span class="gessa-menu-icon">◢</span>إعلان</a>
+                <a class="gessa-create-link" href="groups.html?create=1"><span class="gessa-menu-icon">♧</span>مجموعة</a>
+                <a class="gessa-create-link" href="events.html?create=1"><span class="gessa-menu-icon">✦</span>مناسبة</a>
+              </div>
+            </section>
+          </div>
+        </div>
+
+        <div class="gessa-popover gessa-popover-simple" id="gessaMessagesPopover" role="dialog" aria-label="الرسائل" hidden>
+          <div class="gessa-popover-top"><h3>Messenger — الرسائل</h3><button class="gessa-popover-close" type="button" data-close-popovers aria-label="إغلاق">×</button></div>
+          <div class="gessa-popover-empty"><span class="gessa-popover-empty-icon">✉</span><strong>رسائلك ستظهر هنا</strong><span>ستجد أحدث المحادثات والرسائل غير المقروءة في هذا المكان.</span></div>
+          <a class="gessa-popover-action" href="messenger.html">فتح Messenger</a>
+        </div>
+
+        <div class="gessa-popover gessa-popover-simple" id="gessaNotificationsPopover" role="dialog" aria-label="الإشعارات" hidden>
+          <div class="gessa-popover-top"><h3>الإشعارات</h3><button class="gessa-popover-close" type="button" data-close-popovers aria-label="إغلاق">×</button></div>
+          <div class="gessa-popover-empty"><span class="gessa-popover-empty-icon">♢</span><strong>لا توجد إشعارات معروضة حاليًا</strong><span>ستظهر هنا تنبيهات الأصدقاء والتعليقات والتفاعلات والمجموعات.</span></div>
+          <a class="gessa-popover-action" href="notifications.html">عرض كل الإشعارات</a>
+        </div>
+      </div>
+      <!-- RIGHT of GESSA: Search + original GESSA logo above Stories, Trends and Groups. -->
+      <div class="welcome-side-pair welcome-side-pair--right">
+        <div class="welcome-right-stack">
+          <form class="welcome-search-brand-row" id="gessaSearchForm" role="search" aria-label="البحث في GESSA">
+            <a class="welcome-search-logo" href="home.html" aria-label="العودة إلى الصفحة الرئيسية">
+              <img src="gessa-home-logo.png" alt="شعار GESSA">
+            </a>
+            <div class="welcome-search-field">
+              <input id="gessaSearchInput" name="q" type="search" maxlength="100" placeholder="ابحث في GESSA" autocomplete="off" aria-label="ابحث في GESSA">
+              <button class="welcome-search-submit" type="submit" aria-label="بحث في GESSA">
+                <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.6" stroke="currentColor" stroke-width="2.1"/><path d="m16 16 4.5 4.5" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/></svg>
+              </button>
+            </div>
+          </form>
+          <div class="gessa-search-results" id="gessaSearchResults" role="status" aria-live="polite" hidden></div>
+          <div class="welcome-right-widgets">
+            <aside class="welcome-widget" aria-label="المجموعات التي اشتركت فيها">
+              <div class="welcome-widget-head">
+                <span>المجموعات</span><span class="welcome-widget-icon" aria-hidden="true">♧</span>
+              </div>
+              <div class="welcome-video-preview">
+                <span class="welcome-video-play" aria-hidden="true">♧</span>
+                <strong>جروباتي</strong>
+                <small>المجموعات التي انضممت إليها</small>
+              </div>
+            </aside>
+
+            <aside class="welcome-widget" aria-label="فيديوهات ترندز">
+              <div class="welcome-widget-head">
+                <span>ترندز</span><span class="welcome-widget-icon" aria-hidden="true">↗</span>
+              </div>
+              <div class="welcome-video-preview">
+                <span class="welcome-video-play" aria-hidden="true">▶</span>
+                <strong>الفيديوهات الترند</strong>
+                <small>ستظهر المقاطع الرائجة هنا</small>
+              </div>
+            </aside>
+
+            <aside class="welcome-widget" aria-label="قصص الأصدقاء على يمين الشعار">
+              <div class="welcome-widget-head">
+                <span>قصص الأصدقاء</span>
+                <span class="welcome-widget-controls">
+                  <button type="button" data-scroll-track="friendStoriesRight" data-scroll-step="-1" aria-label="القصص السابقة يمينًا">‹</button>
+                  <button type="button" data-scroll-track="friendStoriesRight" data-scroll-step="1" aria-label="القصص التالية يمينًا">›</button>
+                </span>
+              </div>
+              <div class="welcome-widget-track" id="friendStoriesRight" aria-live="polite">
+                <div class="welcome-story-empty">
+                  <span class="welcome-story-plus" aria-hidden="true">＋</span>
+                  <strong>قصص الأصدقاء</strong>
+                  <small>ستظهر قصص أصدقائك هنا</small>
+                </div>
+              </div>
+            </aside>
+          </div>
+        </div>
+      </div>
+
+      <!-- LEFT of GESSA: Stories closest to the logo, then Reels, then Articles at the far left. -->
+      <div class="welcome-side-pair welcome-side-pair--left">
+        <aside class="welcome-widget" aria-label="المقالات">
+          <div class="welcome-widget-head">
+            <span>المقالات</span><span class="welcome-widget-icon" aria-hidden="true">✎</span>
+          </div>
+          <div class="welcome-video-preview">
+            <span class="welcome-video-play" aria-hidden="true">✎</span>
+            <strong>مقالات المجتمع</strong>
+            <small>اكتشف المقالات الجديدة هنا</small>
+          </div>
+        </aside>
+
+        <aside class="welcome-widget" aria-label="فيديوهات ريلز">
+          <div class="welcome-widget-head">
+            <span>ريلز</span><span class="welcome-widget-icon" aria-hidden="true">▣</span>
+          </div>
+          <div class="welcome-video-preview">
+            <span class="welcome-video-play" aria-hidden="true">▶</span>
+            <strong>مقاطع ريلز</strong>
+            <small>ستظهر مقاطع الريلز هنا</small>
+          </div>
+        </aside>
+
+        <aside class="welcome-widget" aria-label="قصص الأصدقاء على يسار الشعار">
+          <div class="welcome-widget-head">
+            <span>قصص الأصدقاء</span>
+            <span class="welcome-widget-controls">
+              <button type="button" data-scroll-track="friendStoriesLeft" data-scroll-step="-1" aria-label="القصص السابقة يسارًا">‹</button>
+              <button type="button" data-scroll-track="friendStoriesLeft" data-scroll-step="1" aria-label="القصص التالية يسارًا">›</button>
+            </span>
+          </div>
+          <div class="welcome-widget-track" id="friendStoriesLeft" aria-live="polite">
+            <div class="welcome-story-empty">
+              <span class="welcome-story-plus" aria-hidden="true">＋</span>
+              <strong>قصص الأصدقاء</strong>
+              <small>ستظهر قصص أصدقائك هنا</small>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+  </section>
+
+  <!-- THREE COLUMNS: RIGHT PROFILE / CENTER COMMUNITY / LEFT DISCOVERY -->
+  <main class="home-columns">
+
+    <!-- RIGHT COLUMN -->
+    <aside class="home-column right-column" aria-label="الملف الشخصي">
+      <section class="column-panel profile-card">
+        <h2>ملفي الشخصي</h2>
+        <div class="composer-owner">
+          <a id="composerProfileLink" href="profile.html" aria-label="فتح ملفي الشخصي">
+            <img id="composerAvatar" src="gessa-icon.png" alt="صورتي الشخصية">
+          </a>
+          <div style="min-width:0">
+            <a id="composerName" href="profile.html">ملفي الشخصي</a>
+            <div class="profile-subtitle">حسابك في مجتمع GESSA</div>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <a class="side-link" href="profile.html" style="--link-color:#a0ff4c">
+            <span>عرض ملفي الشخصي</span><span class="link-dot"></span>
+          </a>
+        </div>
+      </section>
+
+      <section class="column-panel column-fill">
+        <h2>مجتمعك، عالمك</h2>
+        <p class="side-note">مساحتك للتواصل ومشاركة الأفكار واكتشاف أقسام GESSA المختلفة.</p>
+        <nav class="side-links shortcut-links" aria-label="اختصارات مجتمع GESSA">
+          <a class="side-link" href="friends.html" style="--link-color:#38bdf8"><span>الأصدقاء</span><span class="link-dot"></span></a>
+          <a class="side-link" href="groups.html" style="--link-color:#a0ff4c"><span>المجموعات</span><span class="link-dot"></span></a>
+          <a class="side-link" href="reels.html" style="--link-color:#ff58d6"><span>الريلز</span><span class="link-dot"></span></a>
+          <a class="side-link" href="trends.html" style="--link-color:#ff8700"><span>الترندز</span><span class="link-dot"></span></a>
+          <a class="side-link" href="messenger.html" style="--link-color:#08b8ff"><span>Messenger</span><span class="link-dot"></span></a>
+          <a class="side-link" href="news.html" style="--link-color:#fff000"><span>الأخبار</span><span class="link-dot"></span></a>
+          <a class="side-link" href="pages.html" style="--link-color:#b58cff"><span>الصفحات</span><span class="link-dot"></span></a>
+          <a class="side-link" href="games.html" style="--link-color:#ff58d6"><span>الألعاب</span><span class="link-dot"></span></a>
+          <a class="side-link" href="articles.html" style="--link-color:#38bdf8"><span>المقالات</span><span class="link-dot"></span></a>
+          <a class="side-link" href="creator-dashboard.html" style="--link-color:#f7b84b"><span>لوحة معلومات منشئ المحتوى</span><span class="link-dot"></span></a>
+          <a class="side-link" href="ads-manager.html" style="--link-color:#fb7185"><span>مدير الإعلانات</span><span class="link-dot"></span></a>
+          <a class="side-link" href="support.html" style="--link-color:#34d399"><span>الدعم</span><span class="link-dot"></span></a>
+        </nav>
+      </section>
+    </aside>
+
+    <!-- CENTER COLUMN: EXISTING COMPOSER AND FEED -->
+    <section class="home-column main-column" aria-label="المجتمع والمنشورات">
+      <div id="homeMessage" role="status" aria-live="polite" hidden></div>
+
+      <section class="community-panel" aria-labelledby="composerTitle">
+        <h2 id="composerTitle">شارك مجتمع GESSA</h2>
+        <form id="pf">
+          <textarea id="pb" name="body" maxlength="5000" placeholder="ماذا تريد أن تشارك اليوم؟" required></textarea>
+          <div class="form-actions">
+            <span class="hint">اكتب مشاركتك ثم اضغط نشر.</span>
+            <button class="primary" type="submit">نشر</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="community-panel" aria-labelledby="feedTitle">
+        <h2 id="feedTitle">أحدث المنشورات</h2>
+        <div id="feed" aria-live="polite">
+          <p class="empty-state">جارٍ تجهيز مجتمع GESSA...</p>
+        </div>
+      </section>
     </section>
 
-    <section class="panel" aria-labelledby="feedTitle">
-      <h2 id="feedTitle">أحدث المنشورات</h2>
-      <div id="feed" aria-live="polite">
-        <p class="empty-state">جارٍ تجهيز مجتمع GESSA...</p>
-      </div>
-    </section>
+    <!-- LEFT COLUMN -->
+    <aside class="home-column left-column" aria-label="استكشف أقسام GESSA">
+      <section class="column-panel">
+        <h2>استكشف GESSA</h2>
+        <nav class="side-links" aria-label="روابط الأقسام">
+          <a class="side-link" href="world.html" style="--link-color:#ff8700"><span>العالم الافتراضي</span><span class="link-dot"></span></a>
+          <a class="side-link" href="games.html" style="--link-color:#ff58d6"><span>الألعاب</span><span class="link-dot"></span></a>
+          <a class="side-link" href="shop.html" style="--link-color:#00c7ff"><span>التسوق</span><span class="link-dot"></span></a>
+          <a class="side-link" href="merchant.html" style="--link-color:#fff000"><span>التجار</span><span class="link-dot"></span></a>
+        </nav>
+      </section>
+
+      <section class="column-panel column-fill">
+        <h2>ابدأ الاستكشاف</h2>
+        <p class="side-note">اختر أحد الأقسام من الطبق العلوي، أو استخدم الروابط هنا للانتقال مباشرة.</p>
+      </section>
+
+      <header class="account-toolbar">
+        <button class="logout" id="logoutButton" type="button">تسجيل الخروج</button>
+      </header>
+    </aside>
+
   </main>
 
   <footer class="site-footer">GESSA — مجتمعك، عالمك</footer>
 
-  <!-- Keep the existing Supabase client, config.js, and app.js integration. -->
+  <!-- Existing Supabase and home-feed integration kept intact. -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
   <script src="config.js"></script>
   <script src="app.js"></script>
@@ -379,36 +1600,293 @@
     (() => {
       const path = (location.pathname.split("/").pop() || "home.html").toLowerCase();
       const routeMap = {
-        "home.html": [".hotspot-home"],
-        "world.html": [".hotspot-world"],
-        "profile.html": [".hotspot-profile", ".hotspot-profile-trail"],
-        "merchant.html": [".hotspot-merchant"],
-        "shop.html": [".hotspot-shop"]
+        "home.html": ".sector-home",
+        "world.html": ".sector-world",
+        "profile.html": ".sector-profile",
+        "merchant.html": ".sector-merchant",
+        "shop.html": ".sector-shop",
+        "games.html": ".sector-games"
       };
-      (routeMap[path] || routeMap["home.html"]).forEach(selector => {
-        document.querySelector(selector)?.classList.add("is-current");
+      document.querySelectorAll(".sector-link").forEach(link => {
+        link.classList.remove("is-current");
+        link.removeAttribute("aria-current");
+      });
+      const currentLink = document.querySelector(routeMap[path] || ".sector-home");
+      if (currentLink) {
+        currentLink.classList.add("is-current");
+        currentLink.setAttribute("aria-current", "page");
+      }
+
+
+      // GESSA top quick tools: one active popover at a time.
+      const quickToolDefinitions = [
+        { button: "gessaMenuButton", panel: "gessaMenuPopover" },
+        { button: "gessaMessagesButton", panel: "gessaMessagesPopover" },
+        { button: "gessaNotificationsButton", panel: "gessaNotificationsPopover" }
+      ];
+      const closeQuickPanels = () => {
+        quickToolDefinitions.forEach(({button, panel}) => {
+          const btn = document.getElementById(button);
+          const pop = document.getElementById(panel);
+          if (btn) { btn.classList.remove("is-open"); btn.setAttribute("aria-expanded", "false"); }
+          if (pop) pop.hidden = true;
+        });
+      };
+      quickToolDefinitions.forEach(({button, panel}) => {
+        const btn = document.getElementById(button);
+        const pop = document.getElementById(panel);
+        if (!btn || !pop) return;
+        btn.addEventListener("click", event => {
+          event.stopPropagation();
+          const shouldOpen = pop.hidden;
+          closeQuickPanels();
+          if (shouldOpen) {
+            pop.hidden = false;
+            btn.classList.add("is-open");
+            btn.setAttribute("aria-expanded", "true");
+          }
+        });
+        pop.addEventListener("click", event => event.stopPropagation());
+      });
+      document.querySelectorAll("[data-close-popovers]").forEach(btn => btn.addEventListener("click", closeQuickPanels));
+      document.addEventListener("click", event => {
+        if (!event.target.closest(".gessa-tools-anchor")) closeQuickPanels();
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape") closeQuickPanels();
+      });
+      document.querySelectorAll("[data-focus-composer]").forEach(link => {
+        link.addEventListener("click", () => {
+          closeQuickPanels();
+          window.setTimeout(() => document.getElementById("pb")?.focus(), 100);
+        });
+      });
+
+      // GESSA search: searches public member names and public post text.
+      const gessaSearchForm = document.getElementById("gessaSearchForm");
+      const gessaSearchInput = document.getElementById("gessaSearchInput");
+      const gessaSearchResults = document.getElementById("gessaSearchResults");
+      const escapeSearchHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;"
+      }[char]));
+      const showSearchStatus = message => {
+        if (!gessaSearchResults) return;
+        gessaSearchResults.innerHTML = `<div class="gessa-search-status">${escapeSearchHtml(message)}</div>`;
+        gessaSearchResults.hidden = false;
+      };
+      gessaSearchForm?.addEventListener("submit", async event => {
+        event.preventDefault();
+        const term = gessaSearchInput?.value.trim() || "";
+        if (!term) {
+          gessaSearchInput?.focus();
+          showSearchStatus("اكتب كلمة أو اسمًا للبحث في GESSA.");
+          return;
+        }
+        let client;
+        try { client = window.GESSA?.client?.(); }
+        catch (connectionError) {
+          showSearchStatus("تعذر الاتصال بخدمة البحث. تحقق من إعدادات GESSA.");
+          return;
+        }
+        if (!client) {
+          showSearchStatus("تعذر الاتصال بخدمة البحث. تحقق من إعدادات GESSA.");
+          return;
+        }
+        showSearchStatus("جارٍ البحث في الأعضاء والمنشورات...");
+        const pattern = `%${term.replace(/[\\%_]/g, "\\$&")}%`;
+        try {
+          const [profilesByName, profilesByUsername, matchingPosts] = await Promise.all([
+            client.from("public_profiles").select("id,username,display_name").ilike("display_name", pattern).limit(6),
+            client.from("public_profiles").select("id,username,display_name").ilike("username", pattern).limit(6),
+            client.from("posts").select("id,body,author_id,created_at").ilike("body", pattern).order("created_at", { ascending: false }).limit(6)
+          ]);
+          const profileErrors = [profilesByName.error, profilesByUsername.error].filter(Boolean);
+          if (profilesByName.error && profilesByUsername.error && matchingPosts.error) {
+            throw profileErrors[0] || matchingPosts.error;
+          }
+          const profileMap = new Map();
+          [...(profilesByName.data || []), ...(profilesByUsername.data || [])].forEach(profile => {
+            if (profile?.id) profileMap.set(profile.id, profile);
+          });
+          const profiles = [...profileMap.values()].slice(0, 8);
+          const posts = matchingPosts.data || [];
+          gessaSearchResults.replaceChildren();
+          let hasResults = false;
+          if (profiles.length) {
+            hasResults = true;
+            const section = document.createElement("section");
+            section.className = "gessa-search-section";
+            const heading = document.createElement("h4");
+            heading.textContent = "الأعضاء";
+            section.append(heading);
+            profiles.forEach(profile => {
+              const link = document.createElement("a");
+              link.className = "gessa-search-result";
+              link.href = `profile.html?id=${encodeURIComponent(profile.id)}`;
+              const title = document.createElement("strong");
+              title.textContent = profile.display_name || profile.username || "عضو في GESSA";
+              const subtitle = document.createElement("small");
+              subtitle.textContent = profile.username ? `@${profile.username}` : "ملف عضو";
+              link.append(title, subtitle);
+              section.append(link);
+            });
+            gessaSearchResults.append(section);
+          }
+          if (posts.length) {
+            hasResults = true;
+            const section = document.createElement("section");
+            section.className = "gessa-search-section";
+            const heading = document.createElement("h4");
+            heading.textContent = "المنشورات";
+            section.append(heading);
+            posts.forEach(post => {
+              const link = document.createElement("a");
+              link.className = "gessa-search-result";
+              link.href = "#feed";
+              const excerpt = String(post.body || "").trim();
+              link.textContent = excerpt.length > 130 ? `${excerpt.slice(0, 130)}…` : (excerpt || "منشور بدون نص");
+              link.addEventListener("click", () => { gessaSearchResults.hidden = true; });
+              section.append(link);
+            });
+            gessaSearchResults.append(section);
+          }
+          if (!hasResults) {
+            const status = document.createElement("div");
+            status.className = "gessa-search-status";
+            status.textContent = "لا توجد نتائج مطابقة في الأعضاء أو المنشورات.";
+            gessaSearchResults.append(status);
+          }
+          const closeButton = document.createElement("button");
+          closeButton.type = "button";
+          closeButton.className = "gessa-search-dismiss";
+          closeButton.textContent = "إغلاق نتائج البحث";
+          closeButton.addEventListener("click", () => { gessaSearchResults.hidden = true; });
+          gessaSearchResults.append(closeButton);
+          gessaSearchResults.hidden = false;
+        } catch (error) {
+          showSearchStatus("تعذر إكمال البحث: " + (error?.message || "خطأ غير معروف"));
+        }
+      });
+      document.addEventListener("click", event => {
+        if (!event.target.closest(".welcome-right-stack") && gessaSearchResults) gessaSearchResults.hidden = true;
+      });
+      document.addEventListener("keydown", event => {
+        if (event.key === "Escape" && gessaSearchResults) gessaSearchResults.hidden = true;
+      });
+
+      // Horizontal navigation for the friends-story strips on both sides of GESSA.
+      document.querySelectorAll("[data-scroll-track][data-scroll-step]").forEach(button => {
+        button.addEventListener("click", () => {
+          const track = document.getElementById(button.dataset.scrollTrack);
+          if (!track) return;
+          const step = Number(button.dataset.scrollStep) || 1;
+          track.scrollBy({ left: step * Math.max(100, track.clientWidth * .8), behavior: "smooth" });
+        });
+      });
+
+      const plate = document.getElementById("gessaPlate");
+      const rotor = plate?.querySelector(".plate-rotor");
+      if (plate && rotor) {
+        // Tanoura-style platter rotation: exactly one full turn per second.
+        // The affine matrix rotates the elliptical face around its own centre
+        // while preserving its oval footprint, so no part is clipped above/below.
+        const centerX = 565;
+        const centerY = 240;
+        const ellipseYScale = 224 / 535;
+        let angle = 0;
+        let previousTime = 0;
+        let paused = false;
+        const setPlatePaused = value => {
+          paused = value;
+          plate.classList.toggle("is-paused", value);
+          previousTime = 0;
+        };
+        const applyPlateAngle = degrees => {
+          const radians = degrees * Math.PI / 180;
+          const cos = Math.cos(radians);
+          const sin = Math.sin(radians);
+          const a = cos;
+          const b = ellipseYScale * sin;
+          const c = -sin / ellipseYScale;
+          const d = cos;
+          const e = centerX - a * centerX - c * centerY;
+          const f = centerY - b * centerX - d * centerY;
+          rotor.setAttribute("transform", `matrix(${a} ${b} ${c} ${d} ${e} ${f})`);
+        };
+        applyPlateAngle(0);
+        const spinPlate = now => {
+          if (!paused) {
+            if (previousTime) angle = (angle + (now - previousTime) * 0.36) % 360;
+            applyPlateAngle(angle);
+          }
+          previousTime = now;
+          window.requestAnimationFrame(spinPlate);
+        };
+        window.requestAnimationFrame(spinPlate);
+
+        // Pause only over the actual SVG dish, then resume immediately on exit.
+        rotor.addEventListener("pointerenter", event => {
+          if (event.pointerType !== "touch") setPlatePaused(true);
+        });
+        rotor.addEventListener("pointerleave", event => {
+          if (event.pointerType !== "touch") setPlatePaused(false);
+        });
+        plate.addEventListener("focusin", () => setPlatePaused(true));
+        plate.addEventListener("focusout", event => {
+          if (!plate.contains(event.relatedTarget)) setPlatePaused(false);
+        });
+        rotor.addEventListener("touchstart", () => setPlatePaused(true), { passive: true });
+        let touchResumeTimer;
+        const resumeAfterTouch = () => {
+          window.clearTimeout(touchResumeTimer);
+          touchResumeTimer = window.setTimeout(() => setPlatePaused(false), 1400);
+        };
+        rotor.addEventListener("touchend", resumeAfterTouch, { passive: true });
+        rotor.addEventListener("touchcancel", resumeAfterTouch, { passive: true });
+
+        // The slice under the pointer depresses and flashes; the route-active
+        // slice resumes its own pulse as soon as the pointer leaves another slice.
+        const links = Array.from(rotor.querySelectorAll(".sector-link"));
+        const current = () => rotor.querySelector(".sector-link.is-current");
+        links.forEach(link => {
+          link.addEventListener("pointerenter", event => {
+            if (event.pointerType === "touch") return;
+            link.classList.add("is-pointer-active");
+            const active = current();
+            if (active && active !== link) active.classList.add("is-suspended");
+          });
+          link.addEventListener("pointerleave", () => {
+            link.classList.remove("is-pointer-active");
+            window.setTimeout(() => {
+              const hovered = links.find(item => item.matches(":hover"));
+              const active = current();
+              links.forEach(item => item.classList.toggle("is-pointer-active", item === hovered));
+              if (active) active.classList.toggle("is-suspended", !!hovered && hovered !== active);
+            }, 0);
+          });
+        });
+      }
+
+      document.getElementById("logoutButton")?.addEventListener("click", async () => {
+        const button = document.getElementById("logoutButton");
+        const message = document.getElementById("homeMessage");
+        button.disabled = true;
+        button.textContent = "جارٍ تسجيل الخروج...";
+        try {
+          const client = window.GESSA?.client?.();
+          if (!client?.auth?.signOut) throw new Error("تعذر تحديد اتصال الحساب.");
+          const { error } = await client.auth.signOut({ scope: "local" });
+          if (error) throw error;
+          window.location.replace("index.html");
+        } catch (error) {
+          message.textContent = "تعذر تسجيل الخروج: " + (error?.message || "خطأ غير معروف");
+          message.dataset.type = "error";
+          message.hidden = false;
+          button.disabled = false;
+          button.textContent = "تسجيل الخروج";
+        }
       });
     })();
-
-    document.getElementById("logoutButton")?.addEventListener("click", async () => {
-      const button = document.getElementById("logoutButton");
-      const message = document.getElementById("homeMessage");
-      button.disabled = true;
-      button.textContent = "جارٍ تسجيل الخروج...";
-      try {
-        const client = window.GESSA?.client?.();
-        if (!client?.auth?.signOut) throw new Error("تعذر تحديد اتصال الحساب.");
-        const { error } = await client.auth.signOut({ scope: "local" });
-        if (error) throw error;
-        window.location.replace("index.html");
-      } catch (error) {
-        message.textContent = "تعذر تسجيل الخروج: " + (error?.message || "خطأ غير معروف");
-        message.dataset.type = "error";
-        message.hidden = false;
-        button.disabled = false;
-        button.textContent = "تسجيل الخروج";
-      }
-    });
   </script>
 </body>
 </html>
