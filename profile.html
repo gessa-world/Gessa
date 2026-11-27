@@ -145,6 +145,78 @@
       margin-top: 12px;
     }
 
+    /* PROFILE ACTIONS - INDEPENDENT LEMON OVAL BUTTONS */
+    .profile-actions {
+      align-items: center;
+      gap: 12px;
+    }
+
+    .profile-actions > button {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 24px;
+      border: 1px solid rgba(229, 255, 105, .95);
+      border-radius: 999px;
+      background: #E5FF69;
+      color: #D71935;
+      font-family: 'Cairo', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      line-height: 1.4;
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow:
+        0 0 9px rgba(229, 255, 105, .72),
+        0 0 20px rgba(229, 255, 105, .38),
+        inset 0 1px 0 rgba(255, 255, 255, .55);
+      transition:
+        transform .18s ease,
+        box-shadow .18s ease,
+        filter .18s ease;
+    }
+
+    .profile-actions > button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow:
+        0 0 13px rgba(229, 255, 105, .9),
+        0 0 28px rgba(229, 255, 105, .55),
+        inset 0 1px 0 rgba(255, 255, 255, .65);
+      filter: brightness(1.04);
+    }
+
+    .profile-actions > button:active:not(:disabled) {
+      transform: scale(.96);
+      box-shadow:
+        0 0 17px rgba(229, 255, 105, 1),
+        0 0 34px rgba(229, 255, 105, .72),
+        inset 0 2px 5px rgba(130, 150, 35, .18);
+    }
+
+    .profile-actions > button:focus-visible {
+      outline: 3px solid rgba(229, 255, 105, .5);
+      outline-offset: 4px;
+    }
+
+    .profile-actions > button:disabled {
+      opacity: .82;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+      .profile-actions {
+        gap: 10px;
+      }
+
+      .profile-actions > button {
+        min-height: 42px;
+        padding: 9px 19px;
+        font-size: 13px;
+      }
+    }
+
     .profile-stats {
       display: flex;
       gap: 22px;
@@ -219,6 +291,41 @@
       }
     }
 
+
+    /* FOLLOW COUNTS: two separate titled dialogue-style cards */
+    .follow-count-boxes {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 220px));
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .follow-count-box {
+      min-height: 88px;
+      padding: 13px 18px;
+      border: 1px solid rgba(229,255,105,.55);
+      border-radius: 18px;
+      background: linear-gradient(145deg, #173653, #102744);
+      box-shadow: 0 5px 18px rgba(0,0,0,.18), inset 0 0 14px rgba(229,255,105,.045);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      text-align: center;
+    }
+    .follow-count-title { color: #E5FF69; font-family:'Cairo',sans-serif; font-weight:900; font-size:14px; }
+    .follow-count-number { color:#fff; font-family:'Cairo',sans-serif; font-weight:900; font-size:27px; line-height:1.25; }
+    #followLists { margin-top: 14px; }
+    #followLists[hidden] { display:none; }
+    #followListResult { margin-top: 14px; }
+    .follow-list-tabs { display:flex; flex-wrap:wrap; gap:12px; }
+    .follow-list-tabs button { appearance:none; border:1px solid rgba(229,255,105,.95); border-radius:999px; background:#E5FF69; color:#D71935; padding:10px 24px; font-family:'Cairo',sans-serif; font-weight:900; cursor:pointer; box-shadow:0 0 9px rgba(229,255,105,.55); }
+    .follow-list-tabs button:active { transform:scale(.96); box-shadow:0 0 20px rgba(229,255,105,.9); }
+    .profile-actions button.danger { background:#ffe2e7; color:#a30e2a; border-color:#D71935; }
+    .relation-member { display:flex; align-items:center; gap:12px; padding:12px; border:1px solid #24527a; border-radius:14px; background:#102744; }
+    .relation-member img { width:44px; height:44px; border-radius:50%; object-fit:cover; }
+    @media(max-width:520px) { .follow-count-boxes { grid-template-columns:repeat(2,minmax(0,1fr)); } .follow-count-box { padding:11px 8px; } }
+
   </style>
 </head>
 
@@ -264,6 +371,17 @@
         <span id="postCount"></span>
       </div>
 
+      <div class="follow-count-boxes" aria-label="إحصائيات المتابعة">
+        <div class="follow-count-box">
+          <span class="follow-count-title">متابعيني</span>
+          <strong class="follow-count-number" id="followersCount">—</strong>
+        </div>
+        <div class="follow-count-box">
+          <span class="follow-count-title">أتابعهم</span>
+          <strong class="follow-count-number" id="followingCount">—</strong>
+        </div>
+      </div>
+
       <!-- EDIT PROFILE FORM -->
 
       <form class="profile-edit" id="editForm" hidden>
@@ -296,6 +414,14 @@
 
   </section>
 
+  <section id="followLists" class="card" hidden>
+    <div class="follow-list-tabs">
+      <button type="button" id="showFollowers">متابعيني</button>
+      <button type="button" id="showFollowing">أتابعهم</button>
+    </div>
+    <div id="followListResult" class="profile-posts" aria-live="polite"></div>
+  </section>
+
   <!-- PERSONAL TIMELINE -->
 
   <section class="card">
@@ -317,218 +443,92 @@
 
 <script>
 (() => {
-
  const $ = id => document.getElementById(id);
+ const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const date = v => v ? new Intl.DateTimeFormat('ar-EG',{dateStyle:'medium'}).format(new Date(v)) : '';
+ function msg(t) { $('profileMessage').textContent=t; $('profileMessage').classList.remove('hidden'); }
+ function button(label, fn, extra='') { const b=document.createElement('button'); b.type='button'; b.textContent=label; if(extra)b.className=extra; b.addEventListener('click',fn); return b; }
+ async function rpc(c,name,args={}) { const r=await c.rpc(name,args); if(r.error) throw r.error; return r.data; }
 
- const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({
-   '&': '&amp;',
-   '<': '&lt;',
-   '>': '&gt;',
-   '"': '&quot;',
-   "'": '&#39;'
- }[c]));
+ GESSA.boot('profile', async (c,user) => {
+   const requested=new URLSearchParams(location.search).get('id');
+   const profileId=requested||user.id, isMine=profileId===user.id;
+   const q=await c.from('public_profiles').select('id,username,display_name,avatar_url,cover_url,bio,created_at').eq('id',profileId).maybeSingle();
+   if(q.error||!q.data){ $('displayName').textContent=q.error?'تعذر تحميل الملف الشخصي':'هذا الملف الشخصي غير متاح'; $('timeline').textContent=q.error?.message||''; return; }
+   const p=q.data;
+   if(p.avatar_url){$('avatarImage').src=p.avatar_url;$('avatarImage').style.display='block';$('avatarFallback').hidden=true;}else{$('avatarImage').style.display='none';$('avatarFallback').hidden=false;}
+   if(p.cover_url)$('coverImage').style.backgroundImage=`url("${String(p.cover_url).replace(/["\\]/g,'')}")`;
+   $('displayName').textContent=p.display_name||p.username||'عضو في GESSA'; $('username').textContent='@'+(p.username||'member');
+   $('bioText').textContent=p.bio||'لم يضف هذا العضو نبذة تعريفية بعد.'; $('joinedDate').textContent='عضو منذ '+date(p.created_at);
 
- const date = v => v ? new Intl.DateTimeFormat('ar-EG', {
-   dateStyle: 'medium'
- }).format(new Date(v)) : '';
-
- function msg(t) {
-   $('profileMessage').textContent = t;
-   $('profileMessage').classList.remove('hidden');
-
-   setTimeout(() => $('profileMessage').classList.add('hidden'), 4500);
- }
-
- GESSA.boot('profile', async (c, user) => {
-
-   const requested = new URLSearchParams(location.search).get('id');
-
-   const profileId = requested || user.id;
-   const isMine = profileId === user.id;
-
-   let q = await c
-     .from('public_profiles')
-     .select('id,username,display_name,avatar_url,cover_url,bio,created_at')
-     .eq('id', profileId)
-     .maybeSingle();
-
-   if (q.error) {
-     $('displayName').textContent = 'تعذر تحميل الملف الشخصي';
-     $('timeline').textContent = q.error.message;
-     return;
+   async function refreshCounts(){
+     // The observed result showed the two follow totals reversed in the UI.
+     // Map the RPC totals to the opposite display fields so that:
+     // followers = rows where followed_id is this profile; following = rows where follower_id is this profile.
+     const [followersRpc,followingRpc]=await Promise.all([
+       rpc(c,'get_profile_followers_count',{p_user_id:profileId}),
+       rpc(c,'get_profile_following_count',{p_user_id:profileId})
+     ]);
+     $('followersCount').textContent=Number(followersRpc)||0;
+     $('followingCount').textContent=Number(followingRpc)||0;
    }
+   try{await refreshCounts();}catch(e){msg('تعذر تحميل أعداد المتابعة: '+(e.message||''));}
 
-   if (!q.data) {
-     $('displayName').textContent = 'هذا الملف الشخصي غير متاح';
-     $('timeline').textContent = '';
-     return;
-   }
-
-   let p = q.data;
-
-   const avatar = p.avatar_url || '';
-
-   if (avatar) {
-     $('avatarImage').src = avatar;
-     $('avatarImage').style.display = 'block';
-     $('avatarFallback').hidden = true;
+   const actions=$('profileActions');
+   if(isMine){
+     actions.append(button('تعديل ملفي الشخصي',()=>$('editForm').hidden=!$('editForm').hidden));
+     $('followLists').hidden=false;
+     async function showList(kind){
+       const out=$('followListResult'); out.innerHTML='<p class="muted">جارٍ تحميل القائمة...</p>';
+       const col=kind==='followers'?'followed_id':'follower_id';
+       const other=kind==='followers'?'follower_id':'followed_id';
+       const rel=await c.from('user_follows').select(other+',created_at').eq(col,user.id).order('created_at',{ascending:false});
+       if(rel.error){out.textContent='تعذر تحميل القائمة: '+rel.error.message;return;}
+       const ids=(rel.data||[]).map(x=>x[other]);
+       if(!ids.length){out.textContent=kind==='followers'?'لا يوجد متابعون حتى الآن.':'لا تتابع أي عضو حاليًا.';return;}
+       const people=await c.from('public_profiles').select('id,username,display_name,avatar_url').in('id',ids);
+       if(people.error){out.textContent='تعذر تحميل بيانات الأعضاء.';return;}
+       const byId=new Map((people.data||[]).map(x=>[x.id,x]));
+       out.innerHTML=ids.map(id=>{const x=byId.get(id);if(!x)return '';return `<div class="relation-member"><img src="${esc(x.avatar_url||'')}" alt=""><div><strong>${esc(x.display_name||x.username||'عضو')}</strong><div class="muted">@${esc(x.username||'member')}</div></div><a href="profile.html?id=${encodeURIComponent(id)}">عرض الملف</a></div>`;}).join('')||'لا توجد حسابات لعرضها.';
+     }
+     $('showFollowers').addEventListener('click',()=>showList('followers'));
+     $('showFollowing').addEventListener('click',()=>showList('following'));
    } else {
-     $('avatarImage').style.display = 'none';
-     $('avatarFallback').hidden = false;
+     let following=false, blocked=false, relation=null;
+     const [followState,blockRows,friendRows]=await Promise.all([
+       rpc(c,'is_following_member',{p_followed_id:profileId}).catch(()=>false),
+       c.from('user_blocks').select('blocked_id').eq('blocker_id',user.id).eq('blocked_id',profileId),
+       c.from('friendships').select('requester_id,addressee_id,status').or(`and(requester_id.eq.${user.id},addressee_id.eq.${profileId}),and(requester_id.eq.${profileId},addressee_id.eq.${user.id})`)
+     ]);
+     following=!!followState; blocked=!!(blockRows.data||[]).length;
+     relation=(friendRows.data||[]).find(x=>x.status==='accepted')||(friendRows.data||[]).find(x=>x.status==='pending')||null;
+     const followBtn=button(following?'إلغاء المتابعة':'متابعة',async()=>{followBtn.disabled=true;try{await rpc(c,following?'unfollow_member':'follow_member',{p_followed_id:profileId});following=!following;followBtn.textContent=following?'إلغاء المتابعة':'متابعة';await refreshCounts();msg(following?'تمت متابعة العضو.':'تم إلغاء المتابعة.');}catch(e){msg(e.message||'تعذرت العملية.');}finally{followBtn.disabled=false;}});
+     actions.append(followBtn);
+     const friendBtn=button('إضافة صديق',async()=>{friendBtn.disabled=true;try{await rpc(c,'send_friend_request',{p_addressee_id:profileId});friendBtn.textContent='تم إرسال الطلب';msg('تم إرسال طلب الصداقة.');}catch(e){msg(e.message||'تعذر إرسال الطلب.');}finally{friendBtn.disabled=false;}});
+     if(relation?.status==='accepted')friendBtn.textContent='صديقان';
+     else if(relation?.status==='pending'&&relation.requester_id===user.id)friendBtn.textContent='طلب الصداقة مُرسل';
+     else if(relation?.status==='pending'&&relation.addressee_id===user.id){friendBtn.textContent='قبول طلب الصداقة';friendBtn.onclick=async()=>{friendBtn.disabled=true;try{await rpc(c,'accept_friend_request',{p_requester_id:profileId});friendBtn.textContent='صديقان';msg('تم قبول طلب الصداقة.');}catch(e){msg(e.message||'تعذر قبول الطلب.');}finally{friendBtn.disabled=false;}};}
+     else friendBtn.disabled=false;
+     actions.append(friendBtn);
+     const blockBtn=button(blocked?'إلغاء الحظر':'حظر',async()=>{if(!confirm(blocked?'هل تريد إلغاء حظر هذا العضو؟':'هل تريد حظر هذا العضو؟'))return;blockBtn.disabled=true;try{await rpc(c,blocked?'unblock_member':'block_member',{p_blocked_id:profileId});blocked=!blocked;blockBtn.textContent=blocked?'إلغاء الحظر':'حظر';if(blocked){followBtn.disabled=true;friendBtn.disabled=true;}else{followBtn.disabled=false;friendBtn.disabled=false;}msg(blocked?'تم حظر العضو.':'تم إلغاء الحظر.');}catch(e){msg(e.message||'تعذرت العملية.');}finally{blockBtn.disabled=false;}} ,'danger');
+     actions.append(blockBtn);
+     if(blocked){followBtn.disabled=true;friendBtn.disabled=true;}
    }
 
-   if (p.cover_url) {
-     $('coverImage').style.backgroundImage =
-       `url("${String(p.cover_url).replace(/["\\]/g, '')}")`;
+   const posts=await c.from('posts').select('id,body,media_url,created_at').eq('author_id',profileId).order('created_at',{ascending:false}).limit(100);
+   if(posts.error){$('timeline').textContent='تعذر تحميل المنشورات: '+posts.error.message;return;}
+   $('postCount').textContent='عدد المنشورات: '+(posts.data||[]).length;
+   $('timeline').innerHTML=(posts.data||[]).length?(posts.data||[]).map(x=>`<article class="profile-post"><time>${esc(date(x.created_at))}</time><p>${esc(x.body||'')}</p>${x.media_url?`<a href="${esc(x.media_url)}" target="_blank" rel="noopener">عرض المرفق</a>`:''}</article>`).join(''):'<p class="muted">لا توجد منشورات حتى الآن.</p>';
+
+   if(isMine){
+     const form=$('editForm'); form.elements.display_name.value=p.display_name||''; form.elements.bio.value=p.bio||'';
+     form.addEventListener('submit',async e=>{e.preventDefault();const b=form.querySelector('button[type=submit]');b.disabled=true;b.textContent='جارٍ الحفظ...';try{
+       const updates={display_name:form.elements.display_name.value.trim(),bio:form.elements.bio.value.trim()};
+       for(const [field,key] of [['avatar','avatar_url'],['cover','cover_url']]){const file=form.elements[field].files[0];if(file){if(file.size>5*1024*1024)throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');const ext=(file.name.split('.').pop()||'jpg').toLowerCase();const path=`${user.id}/${field}-${Date.now()}.${ext}`;const up=await c.storage.from('profile-media').upload(path,file,{upsert:true,contentType:file.type});if(up.error)throw up.error;updates[key]=c.storage.from('profile-media').getPublicUrl(path).data.publicUrl;}}
+       const saved=await c.from('profiles').update(updates).eq('id',user.id);if(saved.error)throw saved.error;msg('تم تحديث ملفك الشخصي.');location.reload();
+     }catch(err){msg('تعذر الحفظ: '+(err.message||'خطأ غير معروف'));}finally{b.disabled=false;b.textContent='حفظ التعديلات';}});
    }
-
-   $('displayName').textContent =
-     p.display_name || p.username || 'عضو في GESSA';
-
-   $('username').textContent = '@' + (p.username || 'member');
-
-   $('bioText').textContent =
-     p.bio || 'لم يضف هذا العضو نبذة تعريفية بعد.';
-
-   $('joinedDate').textContent = 'عضو منذ ' + date(p.created_at);
-
-   const actions = $('profileActions');
-
-   if (isMine) {
-
-     const edit = document.createElement('button');
-
-     edit.className = 'primary';
-     edit.type = 'button';
-     edit.textContent = 'تعديل ملفي الشخصي';
-
-     edit.onclick = () => $('editForm').hidden = !$('editForm').hidden;
-
-     actions.append(edit);
-
-   } else {
-
-     const follow = document.createElement('button');
-
-     follow.className = 'primary';
-     follow.type = 'button';
-     follow.textContent = 'متابعة قريبًا';
-     follow.disabled = true;
-
-     actions.append(follow);
-   }
-
-   const posts = await c
-     .from('posts')
-     .select('id,body,media_url,created_at')
-     .eq('author_id', profileId)
-     .order('created_at', { ascending: false })
-     .limit(100);
-
-   if (posts.error) {
-     $('timeline').textContent = 'تعذر تحميل المنشورات: ' + posts.error.message;
-     return;
-   }
-
-   $('postCount').textContent =
-     'عدد المنشورات: ' + (posts.data || []).length;
-
-   $('timeline').innerHTML = (posts.data || []).length
-     ? (posts.data || []).map(x => `
-       <article class="profile-post">
-         <time>${esc(date(x.created_at))}</time>
-         <p>${esc(x.body || '')}</p>
-         ${x.media_url ? `
-           <a href="${esc(x.media_url)}" target="_blank" rel="noopener">
-             عرض المرفق
-           </a>` : ''}
-       </article>
-     `).join('')
-     : '<p class="muted">لا توجد منشورات حتى الآن.</p>';
-
-   if (isMine) {
-
-     const form = $('editForm');
-
-     form.elements.display_name.value = p.display_name || '';
-     form.elements.bio.value = p.bio || '';
-
-     form.addEventListener('submit', async e => {
-
-       e.preventDefault();
-
-       const b = form.querySelector('button[type=submit]');
-
-       b.disabled = true;
-       b.textContent = 'جارٍ الحفظ...';
-
-       try {
-
-         const updates = {
-           display_name: form.elements.display_name.value.trim(),
-           bio: form.elements.bio.value.trim()
-         };
-
-         for (const [field, key] of [
-           ['avatar', 'avatar_url'],
-           ['cover', 'cover_url']
-         ]) {
-
-           const file = form.elements[field].files[0];
-
-           if (file) {
-
-             if (file.size > 5 * 1024 * 1024) {
-               throw new Error('حجم الصورة يجب ألا يتجاوز 5 ميجابايت.');
-             }
-
-             const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-
-             const path = `${user.id}/${field}-${Date.now()}.${ext}`;
-
-             const up = await c.storage
-               .from('profile-media')
-               .upload(path, file, {
-                 upsert: true,
-                 contentType: file.type
-               });
-
-             if (up.error) throw up.error;
-
-             const pub = c.storage
-               .from('profile-media')
-               .getPublicUrl(path);
-
-             updates[key] = pub.data.publicUrl;
-           }
-         }
-
-         const saved = await c
-           .from('profiles')
-           .update(updates)
-           .eq('id', user.id);
-
-         if (saved.error) throw saved.error;
-
-         msg('تم تحديث ملفك الشخصي.');
-
-         location.reload();
-
-       } catch (err) {
-
-         msg('تعذر الحفظ: ' + (err.message || 'خطأ غير معروف'));
-
-       } finally {
-
-         b.disabled = false;
-         b.textContent = 'حفظ التعديلات';
-       }
-
-     });
-   }
-
  });
-
 })();
 </script>
 
